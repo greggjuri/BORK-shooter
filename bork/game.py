@@ -11,14 +11,21 @@ from bork.constants import (
     PLAYER_SHIP_SIZE,
     PLAYER_START_X,
     PLAYER_START_Y,
+    POWERUP_COLLECT_FLASH_COLOR,
+    POWERUP_COLLECT_FLASH_DURATION,
+    POWERUP_SIZE,
+    POWERUP_SPAWN_DELAY,
+    POWERUP_SPAWN_Y,
     SCREEN_HEIGHT,
     SCREEN_TITLE,
     SCREEN_WIDTH,
+    SPEED_BOOST_MULTIPLIER,
     STATE_GAME_OVER,
     STATE_PLAYING,
 )
 from bork.enemy import Enemy
 from bork.player import Player
+from bork.powerup import Powerup
 from bork.projectile import Projectile
 from bork.starfield import Starfield
 from bork.wave_spawner import WaveSpawner
@@ -37,7 +44,9 @@ class BorkGame(arcade.Window):
         self.wave_spawner: WaveSpawner | None = None
         self.keys_pressed: set[int] = set()
         self.state: str = STATE_PLAYING
-        self.destroy_effects: list[list[float]] = []  # [[x, y, timer], ...]
+        self.destroy_effects: list[list] = []  # [[x, y, timer, color], ...]
+        self.powerups: list[Powerup] = []
+        self.powerup_spawn_timer: float = 0.0
 
     def setup(self) -> None:
         """Initialize game state."""
@@ -48,6 +57,8 @@ class BorkGame(arcade.Window):
         self.wave_spawner = WaveSpawner()
         self.state = STATE_PLAYING
         self.destroy_effects = []
+        self.powerups = []
+        self.powerup_spawn_timer = 0.0
 
     def on_update(self, dt: float) -> None:
         """Update all game entities."""
@@ -80,6 +91,28 @@ class BorkGame(arcade.Window):
             e.update(dt)
         self.enemies = [e for e in self.enemies if not e.is_off_screen()]
 
+        # Powerup spawn signal from wave spawner
+        if self.wave_spawner.powerup_spawn_due:
+            self.powerup_spawn_timer = POWERUP_SPAWN_DELAY
+            self.wave_spawner.powerup_spawn_due = False
+
+        # Powerup spawn timer
+        if self.powerup_spawn_timer > 0:
+            self.powerup_spawn_timer -= dt
+            if self.powerup_spawn_timer <= 0:
+                self.powerups.append(
+                    Powerup(
+                        SCREEN_WIDTH + POWERUP_SIZE,
+                        SCREEN_HEIGHT * POWERUP_SPAWN_Y,
+                        "speed",
+                    )
+                )
+
+        # Update powerups and remove off-screen ones
+        for p in self.powerups:
+            p.update(dt)
+        self.powerups = [p for p in self.powerups if not p.is_off_screen()]
+
         # Continuous shooting while Space is held
         if arcade.key.SPACE in self.keys_pressed:
             self._try_shoot()
@@ -89,6 +122,9 @@ class BorkGame(arcade.Window):
 
         # Collision: enemies vs player
         self._check_enemy_player_collisions()
+
+        # Collision: powerups vs player
+        self._check_powerup_player_collisions()
 
     def _check_projectile_enemy_collisions(self) -> None:
         """Remove projectiles and enemies that collide."""
@@ -103,7 +139,7 @@ class BorkGame(arcade.Window):
                     hit_projectiles.add(pi)
                     hit_enemies.add(ei)
                     self.destroy_effects.append(
-                        [enemy.x, enemy.y, DESTROY_FLASH_DURATION]
+                        [enemy.x, enemy.y, DESTROY_FLASH_DURATION, DESTROY_FLASH_COLOR]
                     )
                     break  # one projectile can only hit one enemy
 
@@ -126,6 +162,33 @@ class BorkGame(arcade.Window):
                 self.state = STATE_GAME_OVER
                 return
 
+    def _check_powerup_player_collisions(self) -> None:
+        """Check if player collects any powerup."""
+        remaining: list[Powerup] = []
+        for p in self.powerups:
+            if circle_circle(
+                p.x,
+                p.y,
+                POWERUP_SIZE,
+                self.player.x,
+                self.player.y,
+                PLAYER_SHIP_SIZE,
+            ):
+                # Apply effect (no stacking)
+                if self.player.speed_multiplier <= 1.0:
+                    self.player.speed_multiplier = SPEED_BOOST_MULTIPLIER
+                self.destroy_effects.append(
+                    [
+                        p.x,
+                        p.y,
+                        POWERUP_COLLECT_FLASH_DURATION,
+                        POWERUP_COLLECT_FLASH_COLOR,
+                    ]
+                )
+            else:
+                remaining.append(p)
+        self.powerups = remaining
+
     def on_draw(self) -> None:
         """Draw all game entities."""
         self.clear()
@@ -134,19 +197,21 @@ class BorkGame(arcade.Window):
         for enemy in self.enemies:
             enemy.draw()
 
+        for p in self.powerups:
+            p.draw()
+
         if self.state == STATE_PLAYING:
             self.player.draw()
 
         for proj in self.projectiles:
             proj.draw()
 
-        # Destroy flash effects
+        # Flash effects (destroy + collect)
         for effect in self.destroy_effects:
-            x, y, timer = effect
-            progress = timer / DESTROY_FLASH_DURATION  # 1.0 → 0.0
-            radius = ENEMY_SIZE * (2.0 - progress)  # expands as it fades
-            alpha = int(255 * progress)
-            color = (*DESTROY_FLASH_COLOR, alpha)
+            x, y, timer, base_color = effect
+            alpha = int(255 * min(timer * 8.0, 1.0))  # fade out
+            radius = ENEMY_SIZE * 1.5
+            color = (*base_color, alpha)
             arcade.draw_circle_filled(x, y, radius, color)
 
         # Game over overlay
