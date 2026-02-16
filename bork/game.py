@@ -7,19 +7,21 @@ import arcade
 from bork.collision import circle_circle, point_in_circle
 from bork.constants import (
     COLOR_BACKGROUND,
-    DESTROY_FLASH_COLOR,
-    DESTROY_FLASH_DURATION,
     ENEMY_SIZE,
     PLAYER_MAX_SPEED,
     PLAYER_SHIP_SIZE,
     PLAYER_START_X,
     PLAYER_START_Y,
-    POWERUP_COLLECT_FLASH_COLOR,
-    POWERUP_COLLECT_FLASH_DURATION,
+    POWERUP_COLOR,
     POWERUP_SIZE,
     POWERUP_SPAWN_DELAY,
     POWERUP_SPAWN_Y,
+    SCREEN_FLASH_COLOR,
+    SCREEN_FLASH_DURATION,
+    SCREEN_FLASH_FADE,
     SCREEN_HEIGHT,
+    SCREEN_SHAKE_DURATION,
+    SCREEN_SHAKE_INTENSITY,
     SCREEN_TITLE,
     SCREEN_WIDTH,
     SPEED_BOOST_MULTIPLIER,
@@ -27,9 +29,16 @@ from bork.constants import (
     STATE_PLAYING,
 )
 from bork.enemy import Enemy
+from bork.explosions import (
+    create_enemy_explosion,
+    create_player_explosion,
+    create_powerup_burst,
+)
+from bork.particles import ParticleSystem
 from bork.player import Player
 from bork.powerup import Powerup
 from bork.projectile import Projectile
+from bork.screen_effects import ScreenFlash, ScreenShake
 from bork.starfield import Starfield
 from bork.wave_spawner import WaveSpawner
 
@@ -47,7 +56,9 @@ class BorkGame(arcade.Window):
         self.wave_spawner: WaveSpawner | None = None
         self.keys_pressed: set[int] = set()
         self.state: str = STATE_PLAYING
-        self.destroy_effects: list[list] = []  # [[x, y, timer, color], ...]
+        self.particle_system: ParticleSystem = ParticleSystem()
+        self.screen_flash: ScreenFlash | None = None
+        self.screen_shake: ScreenShake | None = None
         self.powerups: list[Powerup] = []
         self.powerup_spawn_timer: float = 0.0
 
@@ -59,7 +70,9 @@ class BorkGame(arcade.Window):
         self.starfield = Starfield()
         self.wave_spawner = WaveSpawner()
         self.state = STATE_PLAYING
-        self.destroy_effects = []
+        self.particle_system = ParticleSystem()
+        self.screen_flash = None
+        self.screen_shake = None
         self.powerups = []
         self.powerup_spawn_timer = 0.0
 
@@ -68,10 +81,16 @@ class BorkGame(arcade.Window):
         # Starfield always scrolls (even during game over)
         self.starfield.update(dt)
 
-        # Update destroy effects regardless of state
-        for effect in self.destroy_effects:
-            effect[2] -= dt
-        self.destroy_effects = [e for e in self.destroy_effects if e[2] > 0]
+        # Update particles and screen effects regardless of state
+        self.particle_system.update(dt)
+        if self.screen_flash:
+            self.screen_flash.update(dt)
+            if self.screen_flash.is_done:
+                self.screen_flash = None
+        if self.screen_shake:
+            self.screen_shake.update(dt)
+            if self.screen_shake.is_done:
+                self.screen_shake = None
 
         if self.state != STATE_PLAYING:
             return
@@ -141,9 +160,7 @@ class BorkGame(arcade.Window):
                 if point_in_circle(proj.x, proj.y, enemy.x, enemy.y, ENEMY_SIZE):
                     hit_projectiles.add(pi)
                     hit_enemies.add(ei)
-                    self.destroy_effects.append(
-                        [enemy.x, enemy.y, DESTROY_FLASH_DURATION, DESTROY_FLASH_COLOR]
-                    )
+                    self.particle_system.add(create_enemy_explosion(enemy.x, enemy.y))
                     break  # one projectile can only hit one enemy
 
         self.projectiles = [
@@ -162,6 +179,15 @@ class BorkGame(arcade.Window):
                 self.player.y,
                 PLAYER_SHIP_SIZE,
             ):
+                self.particle_system.add(
+                    create_player_explosion(self.player.x, self.player.y)
+                )
+                self.screen_flash = ScreenFlash(
+                    SCREEN_FLASH_COLOR, SCREEN_FLASH_DURATION, SCREEN_FLASH_FADE
+                )
+                self.screen_shake = ScreenShake(
+                    SCREEN_SHAKE_INTENSITY, SCREEN_SHAKE_DURATION
+                )
                 self.state = STATE_GAME_OVER
                 return
 
@@ -180,14 +206,7 @@ class BorkGame(arcade.Window):
                 # Apply effect (no stacking)
                 if self.player.speed_multiplier <= 1.0:
                     self.player.speed_multiplier = SPEED_BOOST_MULTIPLIER
-                self.destroy_effects.append(
-                    [
-                        p.x,
-                        p.y,
-                        POWERUP_COLLECT_FLASH_DURATION,
-                        POWERUP_COLLECT_FLASH_COLOR,
-                    ]
-                )
+                self.particle_system.add(create_powerup_burst(p.x, p.y, POWERUP_COLOR))
             else:
                 remaining.append(p)
         self.powerups = remaining
@@ -195,6 +214,19 @@ class BorkGame(arcade.Window):
     def on_draw(self) -> None:
         """Draw all game entities."""
         self.clear()
+
+        # Apply screen shake offset
+        shake_x, shake_y = 0.0, 0.0
+        if self.screen_shake:
+            shake_x, shake_y = self.screen_shake.get_offset()
+        if shake_x != 0.0 or shake_y != 0.0:
+            self.ctx.projection_2d = (
+                -shake_x,
+                SCREEN_WIDTH - shake_x,
+                -shake_y,
+                SCREEN_HEIGHT - shake_y,
+            )
+
         self.starfield.draw()
 
         for enemy in self.enemies:
@@ -209,13 +241,15 @@ class BorkGame(arcade.Window):
         for proj in self.projectiles:
             proj.draw()
 
-        # Flash effects (destroy + collect)
-        for effect in self.destroy_effects:
-            x, y, timer, base_color = effect
-            alpha = int(255 * min(timer * 8.0, 1.0))  # fade out
-            radius = ENEMY_SIZE * 1.5
-            color = (*base_color, alpha)
-            arcade.draw_circle_filled(x, y, radius, color)
+        self.particle_system.draw()
+
+        # Reset projection after world drawing
+        if shake_x != 0.0 or shake_y != 0.0:
+            self.ctx.projection_2d = (0, SCREEN_WIDTH, 0, SCREEN_HEIGHT)
+
+        # Screen flash overlay (drawn without shake)
+        if self.screen_flash:
+            self.screen_flash.draw()
 
         # Debug speedometer (temporary)
         speed = math.sqrt(self.player.vx**2 + self.player.vy**2)
