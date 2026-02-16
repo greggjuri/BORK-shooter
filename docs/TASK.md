@@ -1,0 +1,68 @@
+# B.O.R.K. - Task Tracking
+
+## Current Sprint: Core Engine
+
+**Goal**: Playable foundation with player ship, shooting, and starfield
+
+### In Progress
+_(none)_
+
+### Ready
+- [ ] Write init-02: Enemy System
+
+### Done
+- [x] Set up project structure (CE-templates)
+- [x] init-01: Core Engine — player ship, shooting, parallax starfield (PRP-001 complete)
+
+---
+
+## Backlog
+
+### Phase 2: Combat
+- [ ] init-02: Enemy system (spawning, patterns, collision)
+- [ ] init-03: Powerup system
+- [ ] init-04: Explosions & particle effects
+
+### Phase 3: Progression
+- [ ] init-05: Scoring & UI (HUD, lives, multipliers)
+- [ ] init-06: Sound system (SFX, music)
+
+### Phase 4: Content
+- [ ] init-07: Boss fights
+- [ ] init-08: Levels & progression
+- [ ] Multiple enemy types
+
+### Phase 5: Polish
+- [ ] Pixel art sprites
+- [ ] Screen shake
+- [ ] Title screen / menus
+- [ ] High score persistence
+
+---
+
+## Nasty Surprises Wishlist
+
+Ideas for unexpected twists to keep players on their toes:
+
+- [ ] Enemies that split when killed
+- [ ] Sudden speed changes (slowdown zones, speed boost zones)
+- [ ] "Fake" powerups that debuff you
+- [ ] Screen-flip moments (gravity reversal?)
+- [ ] Bullet-reflecting enemies
+- [ ] Enemies that appear from behind
+- [ ] Environmental hazards (asteroids, laser gates)
+- [ ] Decoy bosses
+
+---
+
+## Known Issues
+
+None yet — we're just getting started!
+
+---
+
+## Notes
+
+- Polish pass (pixel art, screen shake) is explicitly deferred to Phase 5
+- Sound system (init-06) can be done in parallel with other features
+- Boss fights (init-07) depend on having solid enemy and powerup systems first
