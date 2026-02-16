@@ -45,6 +45,27 @@ WAVE_TOP_Y = 0.75
 WAVE_BOTTOM_Y = 0.25
 WAVE_CENTER_Y = 0.5
 
+# Powerups
+POWERUP_SPEED = 100.0  # pixels/sec (slower than enemies)
+POWERUP_SIZE = 18  # radius
+POWERUP_COLOR = (255, 220, 0)  # yellow
+POWERUP_TEXT_COLOR = (0, 0, 0)  # black letter
+
+# Powerup spawn
+POWERUP_SPAWN_DELAY = 1.0  # seconds after wave 3 completes
+POWERUP_SPAWN_Y = 0.70  # 30% from top = 70% up
+
+# Powerup effects
+SPEED_BOOST_MULTIPLIER = 1.2  # 20% speed increase
+
+# Powerup pulse animation
+POWERUP_PULSE_SPEED = 4.0  # oscillations per second
+POWERUP_PULSE_AMOUNT = 0.15  # scale varies ±15%
+
+# Collect effect
+POWERUP_COLLECT_FLASH_DURATION = 0.15
+POWERUP_COLLECT_FLASH_COLOR = (255, 255, 150)
+
 # Destroy effect
 DESTROY_FLASH_DURATION = 0.12  # seconds
 DESTROY_FLASH_COLOR = (255, 255, 200)
