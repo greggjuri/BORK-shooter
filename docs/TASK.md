@@ -1,25 +1,27 @@
 # B.O.R.K. - Task Tracking
 
-## Current Sprint: Core Engine
+## Current Sprint: Combat
 
-**Goal**: Playable foundation with player ship, shooting, and starfield
+**Goal**: Enemies, powerups, and explosions
 
 ### In Progress
 _(none)_
 
 ### Ready
-- [ ] Write init-02: Enemy System
+- [ ] init-03: Powerup system
+- [ ] init-04: Explosions & particle effects
 
 ### Done
 - [x] Set up project structure (CE-templates)
 - [x] init-01: Core Engine — player ship, shooting, parallax starfield (PRP-001 complete)
+- [x] init-02: Enemy System — 3 wave patterns, collisions, game over, restart (PRP-002 complete)
 
 ---
 
 ## Backlog
 
 ### Phase 2: Combat
-- [ ] init-02: Enemy system (spawning, patterns, collision)
+- [x] init-02: Enemy system (spawning, patterns, collision)
 - [ ] init-03: Powerup system
 - [ ] init-04: Explosions & particle effects
 

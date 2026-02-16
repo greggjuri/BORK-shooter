@@ -2,7 +2,7 @@
 
 **Created**: 2026-02-15
 **Initial**: `initials/init-02-enemy-system.md`
-**Status**: Draft
+**Status**: Complete
 
 ---
 
