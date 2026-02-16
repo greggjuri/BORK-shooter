@@ -29,10 +29,10 @@ class Projectile:
     def draw(self) -> None:
         """Draw the laser bolt as a small filled rectangle."""
         half_w = PROJECTILE_WIDTH / 2
-        arcade.draw_lrtb_rectangle_filled(
+        arcade.draw_lrbt_rectangle_filled(
             self.x - PROJECTILE_LENGTH / 2,
             self.x + PROJECTILE_LENGTH / 2,
-            self.y + half_w,
             self.y - half_w,
+            self.y + half_w,
             COLOR_LASER,
         )
