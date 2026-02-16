@@ -8,13 +8,13 @@
 _(none)_
 
 ### Ready
-- [ ] init-03: Powerup system
 - [ ] init-04: Explosions & particle effects
 
 ### Done
 - [x] Set up project structure (CE-templates)
 - [x] init-01: Core Engine — player ship, shooting, parallax starfield (PRP-001 complete)
 - [x] init-02: Enemy System — 3 wave patterns, collisions, game over, restart (PRP-002 complete)
+- [x] init-03: Powerup System — speed boost, pulse animation, wave 3 trigger (PRP-003 complete)
 
 ---
 
@@ -22,7 +22,7 @@ _(none)_
 
 ### Phase 2: Combat
 - [x] init-02: Enemy system (spawning, patterns, collision)
-- [ ] init-03: Powerup system
+- [x] init-03: Powerup system
 - [ ] init-04: Explosions & particle effects
 
 ### Phase 3: Progression
