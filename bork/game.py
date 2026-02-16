@@ -1,5 +1,7 @@
 """B.O.R.K. — main game window and loop."""
 
+import math
+
 import arcade
 
 from bork.collision import circle_circle, point_in_circle
@@ -8,6 +10,7 @@ from bork.constants import (
     DESTROY_FLASH_COLOR,
     DESTROY_FLASH_DURATION,
     ENEMY_SIZE,
+    PLAYER_MAX_SPEED,
     PLAYER_SHIP_SIZE,
     PLAYER_START_X,
     PLAYER_START_Y,
@@ -213,6 +216,19 @@ class BorkGame(arcade.Window):
             radius = ENEMY_SIZE * 1.5
             color = (*base_color, alpha)
             arcade.draw_circle_filled(x, y, radius, color)
+
+        # Debug speedometer (temporary)
+        speed = math.sqrt(self.player.vx**2 + self.player.vy**2)
+        max_spd = PLAYER_MAX_SPEED * self.player.speed_multiplier
+        arcade.draw_text(
+            f"SPD: {speed:.0f} / {max_spd:.0f}",
+            SCREEN_WIDTH - 10,
+            10,
+            arcade.color.WHITE,
+            font_size=12,
+            anchor_x="right",
+            anchor_y="bottom",
+        )
 
         # Game over overlay
         if self.state == STATE_GAME_OVER:
