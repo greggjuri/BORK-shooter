@@ -12,6 +12,7 @@ from bork.constants import (
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
     SHOOT_COOLDOWN,
+    SPEED_BOOST_MULTIPLIER,
 )
 from bork.player import Player
 
@@ -111,3 +112,19 @@ def test_player_diagonal_movement() -> None:
     p.update(DT, keys)
     assert p.vx > 0
     assert p.vy > 0
+
+
+def test_player_speed_multiplier_default() -> None:
+    p = Player(100, 100)
+    assert p.speed_multiplier == 1.0
+
+
+def test_player_speed_multiplier_increases_max_speed() -> None:
+    p = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+    p.speed_multiplier = SPEED_BOOST_MULTIPLIER
+    p.vx = 9999.0
+    p.vy = 0.0
+    p.update(DT, set())
+    boosted_max = PLAYER_MAX_SPEED * SPEED_BOOST_MULTIPLIER
+    assert abs(p.vx) <= boosted_max + 0.01
+    assert abs(p.vx) > PLAYER_MAX_SPEED

@@ -26,6 +26,7 @@ class Player:
         self.vx = 0.0
         self.vy = 0.0
         self.shoot_timer = 0.0
+        self.speed_multiplier = 1.0
 
     def update(self, dt: float, keys_pressed: set[int]) -> None:
         """Update position based on input, friction, and bounds."""
@@ -55,10 +56,11 @@ class Player:
         self.vx *= friction
         self.vy *= friction
 
-        # Clamp to max speed
+        # Clamp to max speed (adjusted by powerup multiplier)
+        max_speed = PLAYER_MAX_SPEED * self.speed_multiplier
         speed = math.sqrt(self.vx * self.vx + self.vy * self.vy)
-        if speed > PLAYER_MAX_SPEED:
-            scale = PLAYER_MAX_SPEED / speed
+        if speed > max_speed:
+            scale = max_speed / speed
             self.vx *= scale
             self.vy *= scale
 
