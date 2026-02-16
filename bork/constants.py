@@ -62,13 +62,38 @@ SPEED_BOOST_MULTIPLIER = 1.35  # 35% speed increase
 POWERUP_PULSE_SPEED = 4.0  # oscillations per second
 POWERUP_PULSE_AMOUNT = 0.15  # scale varies ±15%
 
-# Collect effect
-POWERUP_COLLECT_FLASH_DURATION = 0.15
-POWERUP_COLLECT_FLASH_COLOR = (255, 255, 150)
+# Particles
+PARTICLE_POOL_SIZE = 500  # max concurrent particles
 
-# Destroy effect
-DESTROY_FLASH_DURATION = 0.12  # seconds
-DESTROY_FLASH_COLOR = (255, 255, 200)
+# Enemy explosion
+ENEMY_EXPLOSION_COUNT = (12, 20)  # min, max particles
+ENEMY_EXPLOSION_SPEED = (100, 300)  # px/sec
+ENEMY_EXPLOSION_LIFETIME = (0.3, 0.6)  # seconds
+ENEMY_EXPLOSION_SIZE = (4, 8)  # start size px
+ENEMY_EXPLOSION_COLOR_END = (255, 150, 0)  # fade to orange
+
+# Player explosion
+PLAYER_EXPLOSION_COUNT = (30, 50)
+PLAYER_EXPLOSION_SPEED = (200, 500)  # px/sec
+PLAYER_EXPLOSION_LIFETIME = (0.5, 1.0)  # seconds
+PLAYER_EXPLOSION_SIZE = (6, 12)  # start size px
+PLAYER_EXPLOSION_COLOR_END = (255, 200, 50)  # fade to yellow-orange
+
+# Powerup burst
+POWERUP_BURST_COUNT = (8, 12)
+POWERUP_BURST_SPEED = (80, 150)  # px/sec
+POWERUP_BURST_LIFETIME = (0.3, 0.4)  # seconds
+POWERUP_BURST_SIZE = (3, 5)  # start size px
+POWERUP_BURST_COLOR_END = (255, 255, 200)  # fade to light yellow
+
+# Screen flash
+SCREEN_FLASH_DURATION = 0.1  # full brightness seconds
+SCREEN_FLASH_FADE = 0.2  # fade-out seconds
+SCREEN_FLASH_COLOR = (255, 255, 255)  # white
+
+# Screen shake
+SCREEN_SHAKE_INTENSITY = 6.0  # pixels
+SCREEN_SHAKE_DURATION = 0.3  # seconds
 
 # Game state
 STATE_PLAYING = "playing"
