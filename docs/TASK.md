@@ -1,20 +1,21 @@
 # B.O.R.K. - Task Tracking
 
-## Current Sprint: Combat
+## Current Sprint: Progression
 
-**Goal**: Enemies, powerups, and explosions
+**Goal**: Scoring, UI, and sound
 
 ### In Progress
 _(none)_
 
 ### Ready
-- [ ] init-04: Explosions & particle effects
+_(none)_
 
 ### Done
 - [x] Set up project structure (CE-templates)
 - [x] init-01: Core Engine — player ship, shooting, parallax starfield (PRP-001 complete)
 - [x] init-02: Enemy System — 3 wave patterns, collisions, game over, restart (PRP-002 complete)
 - [x] init-03: Powerup System — speed boost, pulse animation, wave 3 trigger (PRP-003 complete)
+- [x] init-04: Explosions — particle system, screen flash, screen shake (PRP-004 complete)
 
 ---
 
@@ -23,7 +24,7 @@ _(none)_
 ### Phase 2: Combat
 - [x] init-02: Enemy system (spawning, patterns, collision)
 - [x] init-03: Powerup system
-- [ ] init-04: Explosions & particle effects
+- [x] init-04: Explosions & particle effects
 
 ### Phase 3: Progression
 - [ ] init-05: Scoring & UI (HUD, lives, multipliers)
@@ -36,7 +37,7 @@ _(none)_
 
 ### Phase 5: Polish
 - [ ] Pixel art sprites
-- [ ] Screen shake
+- [x] Screen shake (implemented in init-04)
 - [ ] Title screen / menus
 - [ ] High score persistence
 
