@@ -59,7 +59,7 @@ Ideas for unexpected twists to keep players on their toes:
 
 ## Known Issues
 
-None yet — we're just getting started!
+- Debug speedometer in lower right corner (temporary, added for init-03 testing)
 
 ---
 
