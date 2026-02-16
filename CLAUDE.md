@@ -109,4 +109,4 @@ Use conventional commits:
 
 ## Current Phase
 
-**Phase 1: Core Engine** — Player ship, shooting, starfield (init-01)
+**Phase 2: Combat** — Powerups, explosions, particle effects (init-03, init-04)
