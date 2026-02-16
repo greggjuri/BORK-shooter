@@ -117,3 +117,39 @@ def test_reset() -> None:
     assert s.timer == WAVE_START_DELAY
     assert s.spawned_in_wave == 0
     assert s.wave_active is False
+    assert s.powerup_spawn_due is False
+
+
+def _complete_waves(spawner: WaveSpawner, count: int) -> None:
+    """Advance spawner until `count` full waves have completed."""
+    completed = 0
+    spawned = 0
+    for _ in range(6000):  # max ~100 seconds
+        result = spawner.update(DT)
+        if result is not None:
+            spawned += 1
+            if spawned % ENEMIES_PER_WAVE == 0:
+                completed += 1
+                if completed >= count:
+                    return
+    raise RuntimeError(f"Only completed {completed}/{count} waves")
+
+
+def test_powerup_spawn_due_after_wave_3() -> None:
+    s = WaveSpawner()
+    assert s.powerup_spawn_due is False
+    _complete_waves(s, 3)
+    assert s.powerup_spawn_due is True
+
+
+def test_powerup_spawn_due_not_after_wave_1() -> None:
+    s = WaveSpawner()
+    _complete_waves(s, 1)
+    assert s.powerup_spawn_due is False
+
+
+def test_powerup_spawn_due_resets() -> None:
+    s = WaveSpawner()
+    s.powerup_spawn_due = True
+    s.reset()
+    assert s.powerup_spawn_due is False

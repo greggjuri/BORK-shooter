@@ -30,6 +30,7 @@ class WaveSpawner:
         self.timer = WAVE_START_DELAY
         self.spawned_in_wave = 0
         self.wave_active = False
+        self.powerup_spawn_due = False
 
     def update(self, dt: float) -> Enemy | None:
         """Tick the spawner. Returns a new Enemy if one should spawn."""
@@ -48,6 +49,9 @@ class WaveSpawner:
             self.spawned_in_wave += 1
 
             if self.spawned_in_wave >= ENEMIES_PER_WAVE:
+                # Signal powerup spawn after wave 3 (index 2)
+                if self.wave_index == 2:
+                    self.powerup_spawn_due = True
                 # Wave complete — pause before next
                 self.wave_active = False
                 self.spawned_in_wave = 0
@@ -72,3 +76,4 @@ class WaveSpawner:
         self.timer = WAVE_START_DELAY
         self.spawned_in_wave = 0
         self.wave_active = False
+        self.powerup_spawn_due = False
