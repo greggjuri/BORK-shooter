@@ -56,7 +56,7 @@ POWERUP_SPAWN_DELAY = 1.0  # seconds after wave 3 completes
 POWERUP_SPAWN_Y = 0.70  # 30% from top = 70% up
 
 # Powerup effects
-SPEED_BOOST_MULTIPLIER = 1.2  # 20% speed increase
+SPEED_BOOST_MULTIPLIER = 1.35  # 35% speed increase
 
 # Powerup pulse animation
 POWERUP_PULSE_SPEED = 4.0  # oscillations per second
