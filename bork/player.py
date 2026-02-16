@@ -48,8 +48,8 @@ class Player:
             ax *= factor
             ay *= factor
 
-        self.vx += ax * dt
-        self.vy += ay * dt
+        self.vx += ax * self.speed_multiplier * dt
+        self.vy += ay * self.speed_multiplier * dt
 
         # Apply friction (frame-rate independent)
         friction = PLAYER_FRICTION ** (dt * TARGET_FPS)
