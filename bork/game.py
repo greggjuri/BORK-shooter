@@ -1,21 +1,21 @@
 """B.O.R.K. — main game window and loop."""
 
-import math
-
 import arcade
 
 from bork.collision import circle_circle, point_in_circle
 from bork.constants import (
     COLOR_BACKGROUND,
+    COMBO_MILESTONES,
     ENEMY_SIZE,
-    PLAYER_MAX_SPEED,
     PLAYER_SHIP_SIZE,
     PLAYER_START_X,
     PLAYER_START_Y,
+    POINTS_BASIC_ENEMY,
     POWERUP_COLOR,
     POWERUP_SIZE,
     POWERUP_SPAWN_DELAY,
     POWERUP_SPAWN_Y,
+    RESPAWN_INVULNERABLE_TIME,
     SCREEN_FLASH_COLOR,
     SCREEN_FLASH_DURATION,
     SCREEN_FLASH_FADE,
@@ -25,6 +25,7 @@ from bork.constants import (
     SCREEN_TITLE,
     SCREEN_WIDTH,
     SPEED_BOOST_MULTIPLIER,
+    STARTING_LIVES,
     STATE_GAME_OVER,
     STATE_PLAYING,
 )
@@ -34,10 +35,13 @@ from bork.explosions import (
     create_player_explosion,
     create_powerup_burst,
 )
+from bork.hud import HUD
 from bork.particles import ParticleSystem
 from bork.player import Player
 from bork.powerup import Powerup
 from bork.projectile import Projectile
+from bork.score_popup import ScorePopupManager
+from bork.scoring import ScoringSystem
 from bork.screen_effects import ScreenFlash, ScreenShake
 from bork.starfield import Starfield
 from bork.wave_spawner import WaveSpawner
@@ -61,6 +65,10 @@ class BorkGame(arcade.Window):
         self.screen_shake: ScreenShake | None = None
         self.powerups: list[Powerup] = []
         self.powerup_spawn_timer: float = 0.0
+        self.scoring: ScoringSystem = ScoringSystem()
+        self.hud: HUD = HUD()
+        self.score_popups: ScorePopupManager = ScorePopupManager()
+        self.lives: int = STARTING_LIVES
 
     def setup(self) -> None:
         """Initialize game state."""
@@ -75,6 +83,10 @@ class BorkGame(arcade.Window):
         self.screen_shake = None
         self.powerups = []
         self.powerup_spawn_timer = 0.0
+        self.scoring = ScoringSystem()
+        self.hud = HUD()
+        self.score_popups = ScorePopupManager()
+        self.lives = STARTING_LIVES
 
     def on_update(self, dt: float) -> None:
         """Update all game entities."""
@@ -91,6 +103,11 @@ class BorkGame(arcade.Window):
             self.screen_shake.update(dt)
             if self.screen_shake.is_done:
                 self.screen_shake = None
+
+        # Update scoring, HUD, and popups even during game over
+        self.scoring.update(dt)
+        self.hud.update(dt)
+        self.score_popups.update(dt)
 
         if self.state != STATE_PLAYING:
             return
@@ -149,7 +166,7 @@ class BorkGame(arcade.Window):
         self._check_powerup_player_collisions()
 
     def _check_projectile_enemy_collisions(self) -> None:
-        """Remove projectiles and enemies that collide."""
+        """Remove projectiles and enemies that collide, award score."""
         hit_projectiles: set[int] = set()
         hit_enemies: set[int] = set()
 
@@ -161,6 +178,13 @@ class BorkGame(arcade.Window):
                     hit_projectiles.add(pi)
                     hit_enemies.add(ei)
                     self.particle_system.add(create_enemy_explosion(enemy.x, enemy.y))
+                    # Score the kill
+                    points = self.scoring.register_kill(POINTS_BASIC_ENEMY)
+                    self.score_popups.spawn(enemy.x, enemy.y, points)
+                    # Check combo milestones
+                    milestone = COMBO_MILESTONES.get(self.scoring.combo)
+                    if milestone:
+                        self.hud.trigger_milestone(milestone)
                     break  # one projectile can only hit one enemy
 
         self.projectiles = [
@@ -170,6 +194,9 @@ class BorkGame(arcade.Window):
 
     def _check_enemy_player_collisions(self) -> None:
         """Check if any enemy touches the player."""
+        if self.player.is_invulnerable:
+            return
+
         for enemy in self.enemies:
             if circle_circle(
                 enemy.x,
@@ -188,7 +215,16 @@ class BorkGame(arcade.Window):
                 self.screen_shake = ScreenShake(
                     SCREEN_SHAKE_INTENSITY, SCREEN_SHAKE_DURATION
                 )
-                self.state = STATE_GAME_OVER
+                self.lives -= 1
+                if self.lives <= 0:
+                    self.state = STATE_GAME_OVER
+                else:
+                    # Respawn player
+                    self.player.x = PLAYER_START_X
+                    self.player.y = PLAYER_START_Y
+                    self.player.vx = 0.0
+                    self.player.vy = 0.0
+                    self.player.invulnerable_timer = RESPAWN_INVULNERABLE_TIME
                 return
 
     def _check_powerup_player_collisions(self) -> None:
@@ -210,6 +246,13 @@ class BorkGame(arcade.Window):
             else:
                 remaining.append(p)
         self.powerups = remaining
+
+    def _get_active_powerups(self) -> list[str]:
+        """Build list of active powerup names for HUD display."""
+        powerups: list[str] = []
+        if self.player.speed_multiplier > 1.0:
+            powerups.append("speed")
+        return powerups
 
     def on_draw(self) -> None:
         """Draw all game entities."""
@@ -243,6 +286,9 @@ class BorkGame(arcade.Window):
 
         self.particle_system.draw()
 
+        # Score popups in world space (affected by shake)
+        self.score_popups.draw()
+
         # Reset projection after world drawing
         if shake_x != 0.0 or shake_y != 0.0:
             self.ctx.projection_2d = (0, SCREEN_WIDTH, 0, SCREEN_HEIGHT)
@@ -251,17 +297,13 @@ class BorkGame(arcade.Window):
         if self.screen_flash:
             self.screen_flash.draw()
 
-        # Debug speedometer (temporary)
-        speed = math.sqrt(self.player.vx**2 + self.player.vy**2)
-        max_spd = PLAYER_MAX_SPEED * self.player.speed_multiplier
-        arcade.draw_text(
-            f"SPD: {speed:.0f} / {max_spd:.0f}",
-            SCREEN_WIDTH - 10,
-            10,
-            arcade.color.WHITE,
-            font_size=12,
-            anchor_x="right",
-            anchor_y="bottom",
+        # HUD (drawn without shake)
+        self.hud.draw(
+            self.scoring.score,
+            self.scoring.multiplier,
+            self.scoring.combo,
+            self.lives,
+            self._get_active_powerups(),
         )
 
         # Game over overlay
@@ -276,9 +318,18 @@ class BorkGame(arcade.Window):
                 anchor_y="center",
             )
             arcade.draw_text(
+                f"Final Score: {self.scoring.score:,}",
+                SCREEN_WIDTH / 2,
+                SCREEN_HEIGHT / 2 - 20,
+                arcade.color.LIGHT_GRAY,
+                font_size=18,
+                anchor_x="center",
+                anchor_y="center",
+            )
+            arcade.draw_text(
                 "Press R to restart",
                 SCREEN_WIDTH / 2,
-                SCREEN_HEIGHT / 2 - 30,
+                SCREEN_HEIGHT / 2 - 50,
                 arcade.color.LIGHT_GRAY,
                 font_size=16,
                 anchor_x="center",
