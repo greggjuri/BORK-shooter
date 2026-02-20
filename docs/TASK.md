@@ -16,6 +16,7 @@ _(none)_
 - [x] init-02: Enemy System — 3 wave patterns, collisions, game over, restart (PRP-002 complete)
 - [x] init-03: Powerup System — speed boost, pulse animation, wave 3 trigger (PRP-003 complete)
 - [x] init-04: Explosions — particle system, screen flash, screen shake (PRP-004 complete)
+- [x] init-05: Scoring & HUD — score, multiplier, combo, lives, sci-fi HUD, popups (PRP-005 complete)
 
 ---
 
@@ -27,7 +28,7 @@ _(none)_
 - [x] init-04: Explosions & particle effects
 
 ### Phase 3: Progression
-- [ ] init-05: Scoring & UI (HUD, lives, multipliers)
+- [x] init-05: Scoring & UI (HUD, lives, multipliers)
 - [ ] init-06: Sound system (SFX, music)
 
 ### Phase 4: Content
@@ -60,7 +61,7 @@ Ideas for unexpected twists to keep players on their toes:
 
 ## Known Issues
 
-- Debug speedometer in lower right corner (temporary, added for init-03 testing)
+_(none)_
 
 ---
 
