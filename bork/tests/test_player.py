@@ -9,6 +9,7 @@ from bork.constants import (
     PLAYER_SHIP_SIZE,
     PLAYER_START_X,
     PLAYER_START_Y,
+    RESPAWN_INVULNERABLE_TIME,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
     SHOOT_COOLDOWN,
@@ -128,3 +129,31 @@ def test_player_speed_multiplier_increases_max_speed() -> None:
     boosted_max = PLAYER_MAX_SPEED * SPEED_BOOST_MULTIPLIER
     assert abs(p.vx) <= boosted_max + 0.01
     assert abs(p.vx) > PLAYER_MAX_SPEED
+
+
+def test_player_not_invulnerable_initially() -> None:
+    p = Player(100, 100)
+    assert p.is_invulnerable is False
+
+
+def test_player_invulnerable_when_timer_set() -> None:
+    p = Player(100, 100)
+    p.invulnerable_timer = RESPAWN_INVULNERABLE_TIME
+    assert p.is_invulnerable is True
+
+
+def test_invulnerable_timer_decrements() -> None:
+    p = Player(100, 100)
+    p.invulnerable_timer = 1.0
+    p.update(DT, set())
+    assert p.invulnerable_timer < 1.0
+
+
+def test_invulnerable_ends_at_zero() -> None:
+    p = Player(100, 100)
+    p.invulnerable_timer = 0.05
+    # Tick enough to expire
+    for _ in range(10):
+        p.update(DT, set())
+    assert p.is_invulnerable is False
+    assert p.invulnerable_timer == 0.0

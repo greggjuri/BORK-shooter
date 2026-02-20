@@ -6,6 +6,7 @@ import arcade
 
 from bork.constants import (
     COLOR_PLAYER,
+    INVULNERABLE_BLINK_RATE,
     PLAYER_ACCELERATION,
     PLAYER_FRICTION,
     PLAYER_MAX_SPEED,
@@ -27,9 +28,20 @@ class Player:
         self.vy = 0.0
         self.shoot_timer = 0.0
         self.speed_multiplier = 1.0
+        self.invulnerable_timer: float = 0.0
+
+    @property
+    def is_invulnerable(self) -> bool:
+        """Return True if player is in invulnerability period."""
+        return self.invulnerable_timer > 0.0
 
     def update(self, dt: float, keys_pressed: set[int]) -> None:
         """Update position based on input, friction, and bounds."""
+        if self.invulnerable_timer > 0:
+            self.invulnerable_timer -= dt
+            if self.invulnerable_timer < 0:
+                self.invulnerable_timer = 0.0
+
         # Apply acceleration from input
         ax = 0.0
         ay = 0.0
@@ -74,6 +86,9 @@ class Player:
 
     def draw(self) -> None:
         """Draw the ship as a right-pointing triangle."""
+        if self.is_invulnerable:
+            if int(self.invulnerable_timer * INVULNERABLE_BLINK_RATE * 2) % 2 == 0:
+                return
         s = PLAYER_SHIP_SIZE
         arcade.draw_triangle_filled(
             self.x + s,
