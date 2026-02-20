@@ -95,6 +95,54 @@ SCREEN_FLASH_COLOR = (255, 255, 255)  # white
 SCREEN_SHAKE_INTENSITY = 6.0  # pixels
 SCREEN_SHAKE_DURATION = 0.3  # seconds
 
+# Scoring
+POINTS_BASIC_ENEMY = 100
+MULTIPLIER_INCREMENT = 0.1
+MULTIPLIER_MAX = 5.0
+MULTIPLIER_DECAY_DELAY = 3.0  # seconds before decay starts
+COMBO_WINDOW = 2.0  # seconds between kills to maintain combo
+
+# Combo milestones
+COMBO_MILESTONES = {
+    5: "NICE!",
+    10: "UNSTOPPABLE!",
+    20: "GODLIKE!",
+}
+COMBO_MILESTONE_DURATION = 1.0  # seconds to display milestone text
+COMBO_MILESTONE_FADE = 0.5  # seconds to fade out
+
+# Lives
+STARTING_LIVES = 3
+RESPAWN_INVULNERABLE_TIME = 2.0  # seconds of invulnerability after respawn
+INVULNERABLE_BLINK_RATE = 10.0  # blinks per second during invulnerability
+
+# HUD colors
+HUD_PRIMARY = (0, 255, 255)  # Cyan - main text and frames
+HUD_SECONDARY = (100, 200, 255)  # Light blue - secondary elements
+HUD_ACCENT = (255, 220, 100)  # Gold - multiplier/combo highlights
+HUD_DIM = (60, 80, 90)  # Dim cyan - inactive/lost lives
+HUD_BACKGROUND = (0, 10, 20, 180)  # Dark blue, semi-transparent
+
+# HUD layout
+HUD_MARGIN = 20
+HUD_SCORE_FONT_SIZE = 24
+HUD_LABEL_FONT_SIZE = 12
+HUD_MULTI_FONT_SIZE = 16
+HUD_COMBO_FONT_SIZE = 14
+HUD_LIVES_FONT_SIZE = 16
+HUD_POWERUP_FONT_SIZE = 11
+HUD_ZONE_FONT_SIZE = 12
+HUD_MILESTONE_FONT_SIZE = 28
+
+# HUD multiplier pulse
+HUD_MULTI_PULSE_SPEED = 3.0  # pulses per second when active
+HUD_MULTI_PULSE_AMOUNT = 0.3  # alpha varies ±30%
+
+# Score popup
+SCORE_POPUP_DURATION = 0.5  # seconds
+SCORE_POPUP_RISE_SPEED = 60.0  # pixels per second upward
+SCORE_POPUP_FONT_SIZE = 14
+
 # Game state
 STATE_PLAYING = "playing"
 STATE_GAME_OVER = "game_over"
