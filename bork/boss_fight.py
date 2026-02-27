@@ -67,6 +67,10 @@ def update_boss_warning(game: BorkGame, dt: float) -> None:
         e.update(dt)
     game.enemies = [e for e in game.enemies if not e.is_off_screen()]
 
+    # Enemies still interact normally during warning
+    game._check_projectile_enemy_collisions()
+    game._check_enemy_player_collisions()
+
     if game.boss_warning_timer <= 0:
         game.boss = Sentinel(SCREEN_WIDTH + SENTINEL_WIDTH, SCREEN_HEIGHT / 2)
         game.enemy_projectiles = []
@@ -99,6 +103,10 @@ def update_boss_fight(game: BorkGame, dt: float) -> None:
     for e in game.enemies:
         e.update(dt)
     game.enemies = [e for e in game.enemies if not e.is_off_screen()]
+
+    # Enemies still interact normally until they scroll off
+    game._check_projectile_enemy_collisions()
+    game._check_enemy_player_collisions()
 
     check_projectile_boss_collisions(game)
     check_enemy_projectile_player_collisions(game)
