@@ -7,9 +7,6 @@
 ### In Progress
 _(none)_
 
-### Recently Completed
-- [x] init-07-fix: Sentinel redesign — remove wings, simplify to armor + core opening (PRP-007b complete)
-
 ### Ready
 _(none)_
 
@@ -20,6 +17,9 @@ _(none)_
 - [x] init-03: Powerup System — speed boost, pulse animation, wave 3 trigger (PRP-003 complete)
 - [x] init-04: Explosions — particle system, screen flash, screen shake (PRP-004 complete)
 - [x] init-05: Scoring & HUD — score, multiplier, combo, lives, sci-fi HUD, popups (PRP-005 complete)
+- [x] init-07: Boss fights — Sentinel boss with 3 phases, enemy projectiles, beam attack (PRP-007 complete)
+- [x] init-07-fix: Sentinel redesign — remove wings, simplify to armor + core opening (PRP-007b complete)
+- [x] fix: Enemy collisions active during boss warning/fight, 5s warning delay
 
 ---
 
@@ -35,7 +35,7 @@ _(none)_
 - [ ] init-06: Sound system (SFX, music)
 
 ### Phase 4: Content
-- [x] init-07: Boss fights (PRP-007 complete)
+- [x] init-07: Boss fights (PRP-007 + PRP-007b complete)
 - [ ] init-08: Levels & progression
 - [ ] Multiple enemy types
 

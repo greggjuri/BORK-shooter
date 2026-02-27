@@ -183,6 +183,55 @@ Preventing monolithic files that are hard to navigate and maintain.
 
 ---
 
+## ADR-008: Boss State Extraction Pattern
+
+**Date**: 2026-02-26
+**Status**: Accepted
+
+### Context
+The Sentinel boss fight added 6 game states (warning, fight, dying, victory) with collision handlers, state transitions, and scoring logic. Putting all of this in `game.py` pushed it over the 500-line limit (679 lines).
+
+### Decision
+Extract boss state handlers and boss-specific collision methods into a separate `boss_fight.py` module. The module imports `BorkGame` via `TYPE_CHECKING` and takes the game instance as a parameter.
+
+### Rationale
+- Keeps `game.py` under 500 lines (ADR-007)
+- Boss logic is cohesive and self-contained
+- `TYPE_CHECKING` import avoids circular dependencies
+- Pattern can be reused for future boss types or game modes
+
+### Consequences
+- Boss state handlers live in `boss_fight.py`, not on the `BorkGame` class
+- Normal enemy collision methods remain on `BorkGame` and are called by boss handlers when enemies are present during boss states
+- Adding new bosses follows the same extraction pattern
+
+---
+
+## ADR-009: Simplified Boss Damage Model (Armor + Core Opening)
+
+**Date**: 2026-02-26
+**Status**: Accepted (supersedes original wing-based design)
+
+### Context
+The original Sentinel design had destructible wings as separate HP pools with their own attacks, scoring, and collision zones. This added complexity without matching the intended design of a solid armored fortress.
+
+### Decision
+Replace wing system with a 2-zone damage model: core opening (2x damage) and armor (1x damage). Both reduce the single core HP pool. No separate destructible components.
+
+### Rationale
+- Simpler collision logic (2 zones vs 4)
+- Clearer player feedback (aim for the opening = more damage)
+- Fewer edge cases (wing destruction events, partial boss states)
+- Easier to tune difficulty
+
+### Consequences
+- Boss has only one HP pool (core HP)
+- Phase 1 and Phase 2 have fewer attack patterns (no wing attacks)
+- Victory scoring is simpler (core points + no-damage bonus only)
+- May need to compensate for reduced difficulty via tighter attack timing
+
+---
+
 ## Template for New ADRs
 
 ```markdown

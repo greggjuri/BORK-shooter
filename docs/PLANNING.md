@@ -20,26 +20,32 @@ B.O.R.K. is a horizontal scrolling shoot 'em up built with Python and the Arcade
 ## Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        BorkGame                             │
-│                    (arcade.Window)                          │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
-│  │  Starfield  │  │   Player    │  │     GameState       │ │
-│  │  (background)│  │   (ship)    │  │  (score, lives,     │ │
-│  │             │  │             │  │   level, phase)     │ │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘ │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
-│  │ Projectiles │  │   Enemies   │  │      Powerups       │ │
-│  │   (list)    │  │   (list)    │  │       (list)        │ │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘ │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
-│  │ Explosions  │  │    Boss     │  │     SoundManager    │ │
-│  │ (particles) │  │  (special)  │  │    (SFX + music)    │ │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                        BorkGame                              │
+│                    (arcade.Window)                            │
+│                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────────┐ │
+│  │  Starfield  │  │   Player    │  │  ScoringSystem       │ │
+│  │  (background)│  │   (ship)    │  │  (score, multi,      │ │
+│  │             │  │             │  │   combo, popups)     │ │
+│  └─────────────┘  └─────────────┘  └──────────────────────┘ │
+│                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────────┐ │
+│  │ Projectiles │  │   Enemies   │  │      Powerups        │ │
+│  │   (list)    │  │   (list)    │  │       (list)         │ │
+│  └─────────────┘  └─────────────┘  └──────────────────────┘ │
+│                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────────┐ │
+│  │ Particles   │  │  Sentinel   │  │  HUD + ScreenEffects │ │
+│  │ (explosions)│  │  (boss)     │  │  (flash, shake)      │ │
+│  └─────────────┘  └─────────────┘  └──────────────────────┘ │
+│                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────────┐ │
+│  │ WaveSpawner │  │ BossFight   │  │    SoundManager      │ │
+│  │ (9 waves →  │  │ (state      │  │    (SFX + music)     │ │
+│  │  boss)      │  │  handlers)  │  │    (future)          │ │
+│  └─────────────┘  └─────────────┘  └──────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ## Game Loop
@@ -48,35 +54,39 @@ B.O.R.K. is a horizontal scrolling shoot 'em up built with Python and the Arcade
 ┌──────────────────────────────────────────────────────────┐
 │                      on_update(dt)                       │
 ├──────────────────────────────────────────────────────────┤
-│ 1. Update starfield (scroll)                            │
-│ 2. Update player (movement, shoot cooldown)             │
-│ 3. Update projectiles (move, despawn off-screen)        │
-│ 4. Update enemies (patterns, shooting)                  │
-│ 5. Update powerups (drift, despawn)                     │
-│ 6. Check collisions:                                    │
-│    - Player projectiles vs enemies                      │
-│    - Enemy projectiles vs player                        │
-│    - Player vs powerups                                 │
-│    - Player vs enemies (collision damage)               │
-│ 7. Spawn explosions for destroyed entities              │
-│ 8. Update explosions (animate, despawn)                 │
-│ 9. Check win/lose conditions                            │
-│ 10. Update UI (score, lives, powerup indicators)        │
+│ Always:                                                  │
+│  1. Update starfield, particles, screen effects          │
+│  2. Update scoring, HUD, score popups                    │
+│                                                          │
+│ State dispatch:                                          │
+│  STATE_PLAYING:                                          │
+│    - Player, projectiles, enemies, powerups              │
+│    - Collisions (proj↔enemy, enemy↔player, powerups)    │
+│    - Wave spawner → boss trigger at wave 9               │
+│  STATE_BOSS_WARNING (5s):                                │
+│    - Player, projectiles, enemies (scroll off naturally) │
+│    - Enemy collisions still active                       │
+│    - Spawn Sentinel when timer expires                   │
+│  STATE_BOSS_FIGHT:                                       │
+│    - Player, projectiles, boss, enemy projectiles        │
+│    - Boss collisions (core opening=2x, armor=1x)        │
+│    - Remaining enemies still interactive                 │
+│  STATE_BOSS_DYING → STATE_VICTORY → restart              │
 └──────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌──────────────────────────────────────────────────────────┐
 │                       on_draw()                          │
 ├──────────────────────────────────────────────────────────┤
-│ 1. Clear screen                                         │
-│ 2. Draw starfield (back layer)                          │
-│ 3. Draw enemies                                         │
-│ 4. Draw powerups                                        │
-│ 5. Draw player                                          │
-│ 6. Draw projectiles (player + enemy)                    │
-│ 7. Draw explosions                                      │
-│ 8. Draw starfield (front layer, optional)               │
-│ 9. Draw HUD (score, lives, powerups)                    │
+│ World space (with screen shake):                         │
+│  1. Starfield → enemies → powerups → boss → player      │
+│  2. Player projectiles → enemy projectiles               │
+│  3. Particles → score popups                             │
+│ HUD space (no shake):                                    │
+│  4. Screen flash overlay                                 │
+│  5. HUD (score, multiplier, combo, lives, powerups)      │
+│  6. Boss health bar, warning text, victory overlay       │
+│  7. Game over overlay                                    │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -148,29 +158,29 @@ Powerup:
 
 ## Development Phases
 
-### Phase 1: Core Engine ✓ (Current)
+### Phase 1: Core Engine ✓
 - [x] Game window and loop
 - [x] Player movement with momentum
 - [x] Basic shooting
 - [x] Parallax starfield
 
-### Phase 2: Combat
-- [ ] Enemy spawning system
-- [ ] Enemy movement patterns
-- [ ] Player-enemy collision
-- [ ] Projectile-enemy collision
-- [ ] Explosions and particles
+### Phase 2: Combat ✓
+- [x] Enemy spawning system (3 wave patterns, WaveSpawner)
+- [x] Enemy movement patterns (straight, sine, diagonal)
+- [x] Player-enemy collision
+- [x] Projectile-enemy collision
+- [x] Explosions and particles (ParticleSystem, ScreenFlash, ScreenShake)
+- [x] Powerup system (speed boost, pulse animation)
 
-### Phase 3: Progression
-- [ ] Powerup drops
-- [ ] Powerup effects
-- [ ] Scoring system
-- [ ] Lives system
-- [ ] HUD
+### Phase 3: Progression ✓
+- [x] Scoring system (multiplier, combo, milestones)
+- [x] Lives system (3 lives, invulnerability on respawn)
+- [x] HUD (sci-fi style: score, multiplier, combo, lives, powerups, zone)
+- [x] Score popups (floating text on kills)
 
-### Phase 4: Content
+### Phase 4: Content (Current)
+- [x] Boss fights (Sentinel: 3 phases, armor + core opening, beam attack)
 - [ ] Multiple enemy types
-- [ ] Boss fights
 - [ ] Multiple levels/zones
 - [ ] Difficulty progression
 
@@ -178,7 +188,7 @@ Powerup:
 - [ ] Sound effects
 - [ ] Music
 - [ ] Pixel art sprites
-- [ ] Screen shake
+- [x] Screen shake (implemented in Phase 2)
 - [ ] Title screen / menus
 - [ ] High score persistence
 
@@ -205,16 +215,23 @@ Powerup:
 
 Target: Each file under 500 lines
 
-| File | Estimated Lines | Purpose |
-|------|-----------------|---------|
-| constants.py | ~50 | All tunable values |
-| game.py | ~150 | Main window and loop |
+| File | Lines | Purpose |
+|------|-------|---------|
+| constants.py | ~240 | All tunable values |
+| game.py | ~455 | Main window and loop |
 | player.py | ~80 | Player ship |
-| projectile.py | ~50 | Projectiles |
-| starfield.py | ~60 | Background |
-| enemies/base.py | ~100 | Enemy base class |
-| enemies/patterns.py | ~150 | Movement patterns |
-| powerups.py | ~100 | Powerup system |
-| explosions.py | ~80 | Particle effects |
-| hud.py | ~60 | Score/lives display |
-| sound.py | ~50 | Sound management |
+| projectile.py | ~30 | Player projectiles |
+| starfield.py | ~60 | Parallax background |
+| enemy.py | ~60 | Enemy entity |
+| wave_spawner.py | ~90 | Wave spawning, boss trigger |
+| powerup.py | ~50 | Powerup entity |
+| collision.py | ~30 | Collision helpers |
+| explosions.py | ~180 | Particle factory functions |
+| particles.py | ~100 | ParticleSystem + Particle |
+| scoring.py | ~70 | ScoringSystem (multiplier, combo) |
+| score_popup.py | ~60 | Floating score text |
+| screen_effects.py | ~60 | ScreenFlash, ScreenShake |
+| hud.py | ~335 | HUD, boss health bar, warning, victory |
+| boss.py | ~380 | Sentinel boss entity |
+| boss_attacks.py | ~125 | EnemyProjectile + attack factories |
+| boss_fight.py | ~225 | Boss state handlers + collision |
