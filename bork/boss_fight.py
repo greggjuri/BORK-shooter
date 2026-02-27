@@ -26,13 +26,12 @@ from bork.constants import (
     SCREEN_SHAKE_INTENSITY,
     SCREEN_WIDTH,
     SENTINEL_BEAM_HIT_HEIGHT,
+    SENTINEL_BODY_DAMAGE,
+    SENTINEL_CORE_DAMAGE,
     SENTINEL_CORE_POINTS,
-    SENTINEL_CORE_SIZE,
     SENTINEL_NODAMAGE_BONUS,
+    SENTINEL_OPENING_HEIGHT,
     SENTINEL_WIDTH,
-    SENTINEL_WING_HEIGHT,
-    SENTINEL_WING_POINTS,
-    SENTINEL_WING_WIDTH,
     STATE_BOSS_DYING,
     STATE_BOSS_FIGHT,
     STATE_GAME_OVER,
@@ -63,7 +62,7 @@ def update_boss_warning(game: BorkGame, dt: float) -> None:
     for proj in game.projectiles:
         proj.update(dt)
     game.projectiles = [p for p in game.projectiles if not p.is_off_screen()]
-    # Clear remaining enemies
+    # Let existing enemies continue scrolling (they'll leave screen naturally)
     for e in game.enemies:
         e.update(dt)
     game.enemies = [e for e in game.enemies if not e.is_off_screen()]
@@ -73,7 +72,6 @@ def update_boss_warning(game: BorkGame, dt: float) -> None:
         game.enemy_projectiles = []
         game.player_hit_during_boss = False
         game.state = STATE_BOSS_FIGHT
-        game.enemies = []
 
 
 def update_boss_fight(game: BorkGame, dt: float) -> None:
@@ -96,6 +94,11 @@ def update_boss_fight(game: BorkGame, dt: float) -> None:
     game.enemy_projectiles = [
         ep for ep in game.enemy_projectiles if not ep.is_off_screen()
     ]
+
+    # Let remaining enemies from warning phase continue scrolling off
+    for e in game.enemies:
+        e.update(dt)
+    game.enemies = [e for e in game.enemies if not e.is_off_screen()]
 
     check_projectile_boss_collisions(game)
     check_enemy_projectile_player_collisions(game)
@@ -141,12 +144,6 @@ def _award_boss_victory_points(game: BorkGame) -> None:
     game.scoring.register_kill(SENTINEL_CORE_POINTS)
     game.score_popups.spawn(game.boss.x, game.boss.y, SENTINEL_CORE_POINTS)
 
-    game.victory_wing_pts = 0
-    if not game.boss.left_wing_alive:
-        game.victory_wing_pts += SENTINEL_WING_POINTS
-    if not game.boss.right_wing_alive:
-        game.victory_wing_pts += SENTINEL_WING_POINTS
-
     game.victory_bonus_pts = 0
     if not game.player_hit_during_boss:
         game.victory_bonus_pts = SENTINEL_NODAMAGE_BONUS
@@ -155,7 +152,7 @@ def _award_boss_victory_points(game: BorkGame) -> None:
 
 
 def check_projectile_boss_collisions(game: BorkGame) -> None:
-    """Check player projectiles against boss hit zones."""
+    """Check player projectiles against boss hit zones (core opening then armor)."""
     if game.boss is None or game.boss.state != "fighting":
         return
 
@@ -164,45 +161,19 @@ def check_projectile_boss_collisions(game: BorkGame) -> None:
         if pi in hit_projectiles:
             continue
 
-        cx, cy = game.boss.core_pos
-        if point_in_circle(proj.x, proj.y, cx, cy, SENTINEL_CORE_SIZE / 2):
+        # Zone 1: Core opening (narrow horizontal slot, checked first for priority)
+        if point_in_rect(
+            proj.x, proj.y, game.boss.x, game.boss.y, 100, SENTINEL_OPENING_HEIGHT
+        ):
             hit_projectiles.add(pi)
-            game.boss.take_hit("core", 1)
+            game.boss.take_hit(SENTINEL_CORE_DAMAGE)
             game.particle_system.add(create_enemy_explosion(proj.x, proj.y))
             continue
 
-        if game.boss.left_wing_alive:
-            lwx, lwy = game.boss._left_wing_pos()
-            if point_in_rect(
-                proj.x, proj.y, lwx, lwy, SENTINEL_WING_WIDTH, SENTINEL_WING_HEIGHT
-            ):
-                hit_projectiles.add(pi)
-                result = game.boss.take_hit("left_wing", 1)
-                game.particle_system.add(create_enemy_explosion(proj.x, proj.y))
-                if result["destroyed"]:
-                    pts = game.scoring.register_kill(SENTINEL_WING_POINTS)
-                    game.score_popups.spawn(lwx, lwy, pts)
-                    game.particle_system.add(create_boss_small_explosion(lwx, lwy))
-                continue
-
-        if game.boss.right_wing_alive:
-            rwx, rwy = game.boss._right_wing_pos()
-            if point_in_rect(
-                proj.x, proj.y, rwx, rwy, SENTINEL_WING_WIDTH, SENTINEL_WING_HEIGHT
-            ):
-                hit_projectiles.add(pi)
-                result = game.boss.take_hit("right_wing", 1)
-                game.particle_system.add(create_enemy_explosion(proj.x, proj.y))
-                if result["destroyed"]:
-                    pts = game.scoring.register_kill(SENTINEL_WING_POINTS)
-                    game.score_popups.spawn(rwx, rwy, pts)
-                    game.particle_system.add(create_boss_small_explosion(rwx, rwy))
-                continue
-
-        # Body hit
+        # Zone 2: Armor (full body rect)
         if point_in_rect(proj.x, proj.y, game.boss.x, game.boss.y, 100, 80):
             hit_projectiles.add(pi)
-            game.boss.take_hit("body", 1)
+            game.boss.take_hit(SENTINEL_BODY_DAMAGE)
 
     game.projectiles = [
         p for i, p in enumerate(game.projectiles) if i not in hit_projectiles

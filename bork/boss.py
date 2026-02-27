@@ -1,4 +1,4 @@
-"""Zone 1 boss: SENTINEL — a geometric fortress with core, body, and wings."""
+"""Zone 1 boss: SENTINEL — a geometric fortress with armored body and core opening."""
 
 import math
 
@@ -9,21 +9,19 @@ from bork.boss_attacks import (
     create_aimed_shot,
     create_radial_burst,
     create_spread_shot,
-    create_wing_shot,
 )
 from bork.constants import (
     BOSS_BULLET_COLOR_CYAN,
     BOSS_BULLET_COLOR_RED,
-    BOSS_BULLET_COLOR_WHITE,
     BOSS_BULLET_SPEED_FAST,
     BOSS_BULLET_SPEED_MEDIUM,
     SCREEN_HEIGHT,
     SENTINEL_AIMED_INTERVAL,
+    SENTINEL_ARMOR_COLOR,
     SENTINEL_BATTLE_X,
     SENTINEL_BEAM_CHARGE_TIME,
     SENTINEL_BEAM_COOLDOWN,
-    SENTINEL_BODY_COLOR,
-    SENTINEL_BODY_DAMAGE_MULT,
+    SENTINEL_BODY_ACCENT,
     SENTINEL_CORE_COLOR,
     SENTINEL_CORE_GLOW_COLOR,
     SENTINEL_CORE_HP,
@@ -32,6 +30,8 @@ from bork.constants import (
     SENTINEL_HEIGHT,
     SENTINEL_LUNGE_DURATION,
     SENTINEL_LUNGE_SPEED,
+    SENTINEL_OPENING_COLOR,
+    SENTINEL_OPENING_HEIGHT,
     SENTINEL_PHASE2_THRESHOLD,
     SENTINEL_PHASE3_THRESHOLD,
     SENTINEL_SPREAD_INTERVAL_P1,
@@ -39,38 +39,27 @@ from bork.constants import (
     SENTINEL_TRACK_SPEED,
     SENTINEL_TRACK_SPEED_P2,
     SENTINEL_TRACK_SPEED_P3,
-    SENTINEL_WING_COLOR,
-    SENTINEL_WING_HEIGHT,
-    SENTINEL_WING_HP,
-    SENTINEL_WING_INTERVAL,
-    SENTINEL_WING_WIDTH,
 )
 
-# Boss sub-part margins for layout
+# Boss sub-part dimensions for layout
 _BODY_WIDTH = 100
 _BODY_HEIGHT = 80
 
 
 class Sentinel:
-    """Zone 1 boss — geometric fortress with core, body, and destructible wings."""
+    """Zone 1 boss — geometric fortress with armored body and core opening."""
 
     def __init__(self, x: float, y: float) -> None:
         self.x = x
         self.y = y
         # Health
         self.core_hp: int = SENTINEL_CORE_HP
-        self.left_wing_hp: int = SENTINEL_WING_HP
-        self.right_wing_hp: int = SENTINEL_WING_HP
-        self.left_wing_alive: bool = True
-        self.right_wing_alive: bool = True
         # State
         self.state: str = "entering"  # entering, fighting, dying
         self.phase: int = 1
         self.time_alive: float = 0.0
         # Attack timers
         self.spread_timer: float = SENTINEL_SPREAD_INTERVAL_P1
-        self.wing_timer: float = SENTINEL_WING_INTERVAL
-        self.wing_alternate: bool = False  # alternates left/right in phase 1
         self.aimed_timer: float = SENTINEL_AIMED_INTERVAL
         self.beam_charge_timer: float = 0.0
         self.beam_cooldown_timer: float = SENTINEL_BEAM_COOLDOWN
@@ -111,14 +100,6 @@ class Sentinel:
     def core_pos(self) -> tuple[float, float]:
         """Core center position."""
         return (self.x, self.y + 20)
-
-    def _left_wing_pos(self) -> tuple[float, float]:
-        """Left wing center."""
-        return (self.x - _BODY_WIDTH / 2 - SENTINEL_WING_WIDTH / 2 - 5, self.y)
-
-    def _right_wing_pos(self) -> tuple[float, float]:
-        """Right wing center (above body)."""
-        return (self.x + _BODY_WIDTH / 2 + SENTINEL_WING_WIDTH / 2 + 5, self.y)
 
     # --- Main update ---
 
@@ -204,13 +185,11 @@ class Sentinel:
             projectiles.extend(
                 self._tick_spread(dt, cx, cy, player_x, player_y, count=3)
             )
-            projectiles.extend(self._tick_wing_sweep(dt))
         elif self.phase == 2:
             projectiles.extend(
                 self._tick_spread(dt, cx, cy, player_x, player_y, count=5)
             )
             projectiles.extend(self._tick_aimed(dt, cx, cy, player_x, player_y))
-            projectiles.extend(self._tick_wing_barrage(dt))
         elif self.phase == 3:
             projectiles.extend(self._tick_radial_burst(dt, cx, cy))
             self._tick_beam(dt, player_y)
@@ -242,37 +221,6 @@ class Sentinel:
             )
         return []
 
-    def _tick_wing_sweep(self, dt: float) -> list[EnemyProjectile]:
-        """Phase 1: alternating single shots from wings."""
-        self.wing_timer -= dt
-        if self.wing_timer <= 0:
-            self.wing_timer = SENTINEL_WING_INTERVAL
-            # Alternate wings
-            if self.wing_alternate and self.left_wing_alive:
-                wx, wy = self._left_wing_pos()
-                self.wing_alternate = not self.wing_alternate
-                return create_wing_shot(
-                    wx, wy, BOSS_BULLET_SPEED_FAST, BOSS_BULLET_COLOR_WHITE
-                )
-            elif not self.wing_alternate and self.right_wing_alive:
-                wx, wy = self._right_wing_pos()
-                self.wing_alternate = not self.wing_alternate
-                return create_wing_shot(
-                    wx, wy, BOSS_BULLET_SPEED_FAST, BOSS_BULLET_COLOR_WHITE
-                )
-            # If selected wing is dead, try the other
-            elif self.left_wing_alive:
-                wx, wy = self._left_wing_pos()
-                return create_wing_shot(
-                    wx, wy, BOSS_BULLET_SPEED_FAST, BOSS_BULLET_COLOR_WHITE
-                )
-            elif self.right_wing_alive:
-                wx, wy = self._right_wing_pos()
-                return create_wing_shot(
-                    wx, wy, BOSS_BULLET_SPEED_FAST, BOSS_BULLET_COLOR_WHITE
-                )
-        return []
-
     def _tick_aimed(
         self, dt: float, cx: float, cy: float, px: float, py: float
     ) -> list[EnemyProjectile]:
@@ -283,39 +231,6 @@ class Sentinel:
             return create_aimed_shot(
                 cx, cy, px, py, BOSS_BULLET_SPEED_FAST, BOSS_BULLET_COLOR_RED
             )
-        return []
-
-    def _tick_wing_barrage(self, dt: float) -> list[EnemyProjectile]:
-        """Phase 2: both wings fire simultaneously if alive."""
-        self.wing_timer -= dt
-        if self.wing_timer <= 0:
-            self.wing_timer = SENTINEL_WING_INTERVAL
-            projectiles: list[EnemyProjectile] = []
-            if self.left_wing_alive:
-                wx, wy = self._left_wing_pos()
-                for i in range(3):
-                    offset = (i - 1) * 15
-                    projectiles.extend(
-                        create_wing_shot(
-                            wx,
-                            wy + offset,
-                            BOSS_BULLET_SPEED_FAST,
-                            BOSS_BULLET_COLOR_WHITE,
-                        )
-                    )
-            if self.right_wing_alive:
-                wx, wy = self._right_wing_pos()
-                for i in range(3):
-                    offset = (i - 1) * 15
-                    projectiles.extend(
-                        create_wing_shot(
-                            wx,
-                            wy + offset,
-                            BOSS_BULLET_SPEED_FAST,
-                            BOSS_BULLET_COLOR_WHITE,
-                        )
-                    )
-            return projectiles
         return []
 
     def _tick_radial_burst(
@@ -354,37 +269,16 @@ class Sentinel:
 
     # --- Hit handling ---
 
-    def take_hit(self, part: str, damage: float) -> dict:
-        """Apply damage to a part. Returns info about what happened."""
-        result = {"destroyed": False, "part": part, "points": 0}
-
-        if part == "core":
-            self.core_hp = max(0, self.core_hp - int(damage))
-        elif part == "body":
-            reduced = int(damage * SENTINEL_BODY_DAMAGE_MULT)
-            self.core_hp = max(0, self.core_hp - reduced)
-        elif part == "left_wing" and self.left_wing_alive:
-            self.left_wing_hp = max(0, self.left_wing_hp - int(damage))
-            if self.left_wing_hp <= 0:
-                self.left_wing_alive = False
-                result["destroyed"] = True
-        elif part == "right_wing" and self.right_wing_alive:
-            self.right_wing_hp = max(0, self.right_wing_hp - int(damage))
-            if self.right_wing_hp <= 0:
-                self.right_wing_alive = False
-                result["destroyed"] = True
-
-        return result
+    def take_hit(self, damage: int) -> None:
+        """Apply damage to core HP."""
+        self.core_hp = max(0, self.core_hp - damage)
 
     # --- Drawing ---
 
     def draw(self) -> None:
         """Draw the Sentinel boss using geometric shapes."""
         self._draw_body()
-        if self.left_wing_alive:
-            self._draw_wing(*self._left_wing_pos())
-        if self.right_wing_alive:
-            self._draw_wing(*self._right_wing_pos())
+        self._draw_opening()
         self._draw_core()
         if self.beam_visible_timer > 0:
             self._draw_beam()
@@ -392,13 +286,14 @@ class Sentinel:
             self._draw_beam_charge()
 
     def _draw_body(self) -> None:
-        """Draw the main body rectangle with accent lines."""
+        """Draw the armored body with upper and lower armor panels."""
+        # Full body background in armor color
         arcade.draw_lrbt_rectangle_filled(
             self.x - _BODY_WIDTH / 2,
             self.x + _BODY_WIDTH / 2,
             self.y - _BODY_HEIGHT / 2,
             self.y + _BODY_HEIGHT / 2,
-            SENTINEL_BODY_COLOR,
+            SENTINEL_ARMOR_COLOR,
         )
         # Accent outline
         arcade.draw_lrbt_rectangle_outline(
@@ -406,41 +301,43 @@ class Sentinel:
             self.x + _BODY_WIDTH / 2,
             self.y - _BODY_HEIGHT / 2,
             self.y + _BODY_HEIGHT / 2,
-            (*SENTINEL_BODY_COLOR[:3], 180),
+            SENTINEL_BODY_ACCENT,
             border_width=2,
         )
-        # Horizontal accent line
+        # Horizontal accent lines at armor panel edges
         arcade.draw_line(
             self.x - _BODY_WIDTH / 2,
-            self.y,
+            self.y - _BODY_HEIGHT / 2 + 4,
             self.x + _BODY_WIDTH / 2,
-            self.y,
-            (*SENTINEL_BODY_COLOR[:3], 120),
+            self.y - _BODY_HEIGHT / 2 + 4,
+            (*SENTINEL_BODY_ACCENT[:3], 80),
+            1,
+        )
+        arcade.draw_line(
+            self.x - _BODY_WIDTH / 2,
+            self.y + _BODY_HEIGHT / 2 - 4,
+            self.x + _BODY_WIDTH / 2,
+            self.y + _BODY_HEIGHT / 2 - 4,
+            (*SENTINEL_BODY_ACCENT[:3], 80),
             1,
         )
 
-    def _draw_wing(self, wx: float, wy: float) -> None:
-        """Draw a wing panel."""
+    def _draw_opening(self) -> None:
+        """Draw the recessed core opening slot at vertical center."""
+        half_h = SENTINEL_OPENING_HEIGHT / 2
         arcade.draw_lrbt_rectangle_filled(
-            wx - SENTINEL_WING_WIDTH / 2,
-            wx + SENTINEL_WING_WIDTH / 2,
-            wy - SENTINEL_WING_HEIGHT / 2,
-            wy + SENTINEL_WING_HEIGHT / 2,
-            SENTINEL_WING_COLOR,
-        )
-        # Cyan trim
-        arcade.draw_lrbt_rectangle_outline(
-            wx - SENTINEL_WING_WIDTH / 2,
-            wx + SENTINEL_WING_WIDTH / 2,
-            wy - SENTINEL_WING_HEIGHT / 2,
-            wy + SENTINEL_WING_HEIGHT / 2,
-            (*SENTINEL_BODY_COLOR[:3], 150),
-            border_width=1,
+            self.x - _BODY_WIDTH / 2,
+            self.x + _BODY_WIDTH / 2,
+            self.y - half_h,
+            self.y + half_h,
+            SENTINEL_OPENING_COLOR,
         )
 
     def _draw_core(self) -> None:
-        """Draw the glowing core/eye."""
+        """Draw the glowing core visible through the opening."""
         cx, cy = self.core_pos
+        # Shift core to body center Y for the opening
+        cy = self.y
         r = SENTINEL_CORE_SIZE / 2
 
         # Glow pulse
@@ -458,7 +355,8 @@ class Sentinel:
 
     def _draw_beam_charge(self) -> None:
         """Draw charge-up glow on the core before beam fires."""
-        cx, cy = self.core_pos
+        cx = self.x
+        cy = self.y
         progress = 1.0 - (self.beam_charge_timer / SENTINEL_BEAM_CHARGE_TIME)
         glow_r = SENTINEL_CORE_SIZE * (0.5 + progress * 0.8)
         alpha = int(120 * progress)

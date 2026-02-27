@@ -93,7 +93,6 @@ class BorkGame(arcade.Window):
         self.victory_timer: float = 0.0
         self.boss_death_explosion_timer: float = 0.0
         self.victory_points_awarded: bool = False
-        self.victory_wing_pts: int = 0
         self.victory_bonus_pts: int = 0
 
     def setup(self) -> None:
@@ -120,7 +119,6 @@ class BorkGame(arcade.Window):
         self.victory_timer = 0.0
         self.boss_death_explosion_timer = 0.0
         self.victory_points_awarded = False
-        self.victory_wing_pts = 0
         self.victory_bonus_pts = 0
 
     def on_update(self, dt: float) -> None:
@@ -381,8 +379,6 @@ class BorkGame(arcade.Window):
             self.hud.draw_boss_health_bar(
                 self.boss.core_hp,
                 SENTINEL_CORE_HP,
-                self.boss.left_wing_hp,
-                self.boss.right_wing_hp,
                 "SENTINEL",
                 self.boss.phase,
             )
@@ -396,7 +392,6 @@ class BorkGame(arcade.Window):
             self.hud.draw_victory_text(
                 "SENTINEL",
                 SENTINEL_CORE_POINTS,
-                self.victory_wing_pts,
                 self.victory_bonus_pts,
             )
 

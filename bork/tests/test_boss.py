@@ -8,11 +8,11 @@ from bork.constants import (
     ENEMIES_PER_WAVE,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
-    SENTINEL_BODY_DAMAGE_MULT,
+    SENTINEL_BODY_DAMAGE,
+    SENTINEL_CORE_DAMAGE,
     SENTINEL_CORE_HP,
     SENTINEL_PHASE2_THRESHOLD,
     SENTINEL_PHASE3_THRESHOLD,
-    SENTINEL_WING_HP,
 )
 from bork.wave_spawner import WaveSpawner
 
@@ -66,80 +66,54 @@ def test_wave_spawner_reset_clears_boss_trigger():
 
 
 def test_sentinel_initial_hp():
-    """Sentinel starts with correct HP values."""
+    """Sentinel starts with correct core HP and no wing fields."""
     boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
     assert boss.core_hp == SENTINEL_CORE_HP
-    assert boss.left_wing_hp == SENTINEL_WING_HP
-    assert boss.right_wing_hp == SENTINEL_WING_HP
-    assert boss.left_wing_alive is True
-    assert boss.right_wing_alive is True
 
 
-def test_sentinel_core_takes_full_damage():
-    """Core hit reduces core HP by full damage amount."""
+def test_sentinel_has_no_wing_fields():
+    """Sentinel has no wing-related attributes."""
     boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
-    boss.take_hit("core", 1)
+    assert not hasattr(boss, "left_wing_hp")
+    assert not hasattr(boss, "right_wing_hp")
+    assert not hasattr(boss, "left_wing_alive")
+    assert not hasattr(boss, "right_wing_alive")
+
+
+def test_sentinel_take_hit_reduces_core_hp():
+    """take_hit(2) reduces core HP by 2."""
+    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
+    boss.take_hit(2)
+    assert boss.core_hp == SENTINEL_CORE_HP - 2
+
+
+def test_sentinel_take_hit_floors_at_zero():
+    """Core HP never goes below 0."""
+    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
+    boss.take_hit(SENTINEL_CORE_HP + 10)
+    assert boss.core_hp == 0
+
+
+def test_sentinel_armor_takes_1_damage():
+    """Armor hit deals SENTINEL_BODY_DAMAGE (1) to core HP."""
+    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
+    boss.take_hit(SENTINEL_BODY_DAMAGE)
     assert boss.core_hp == SENTINEL_CORE_HP - 1
 
 
-def test_sentinel_core_takes_multiple_damage():
+def test_sentinel_core_opening_takes_2_damage():
+    """Core opening hit deals SENTINEL_CORE_DAMAGE (2) to core HP."""
+    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
+    boss.take_hit(SENTINEL_CORE_DAMAGE)
+    assert boss.core_hp == SENTINEL_CORE_HP - 2
+
+
+def test_sentinel_multiple_hits():
     """Core takes multiple hits correctly."""
     boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
     for _ in range(10):
-        boss.take_hit("core", 1)
+        boss.take_hit(1)
     assert boss.core_hp == SENTINEL_CORE_HP - 10
-
-
-def test_sentinel_body_takes_reduced_damage():
-    """Body hit applies damage multiplier (0.5x, floored to 0 for 1 damage)."""
-    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
-    boss.take_hit("body", 1)
-    expected = SENTINEL_CORE_HP - int(1 * SENTINEL_BODY_DAMAGE_MULT)
-    assert boss.core_hp == expected
-
-
-def test_sentinel_body_higher_damage_applies_multiplier():
-    """Body hit with higher damage shows multiplier effect."""
-    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
-    boss.take_hit("body", 4)
-    expected = SENTINEL_CORE_HP - int(4 * SENTINEL_BODY_DAMAGE_MULT)
-    assert boss.core_hp == expected
-
-
-def test_sentinel_wing_takes_full_damage():
-    """Wing hits reduce wing HP directly."""
-    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
-    boss.take_hit("left_wing", 1)
-    assert boss.left_wing_hp == SENTINEL_WING_HP - 1
-    assert boss.left_wing_alive is True
-
-
-def test_sentinel_wing_destruction():
-    """Wing is destroyed when HP reaches 0."""
-    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
-    for _ in range(SENTINEL_WING_HP):
-        result = boss.take_hit("left_wing", 1)
-    assert boss.left_wing_hp == 0
-    assert boss.left_wing_alive is False
-    assert result["destroyed"] is True
-    assert result["part"] == "left_wing"
-
-
-def test_sentinel_right_wing_destruction():
-    """Right wing can be destroyed independently."""
-    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
-    for _ in range(SENTINEL_WING_HP):
-        boss.take_hit("right_wing", 1)
-    assert boss.right_wing_alive is False
-    assert boss.left_wing_alive is True  # Left wing unaffected
-
-
-def test_sentinel_core_hp_floors_at_zero():
-    """Core HP never goes below 0."""
-    boss = Sentinel(SCREEN_WIDTH, SCREEN_HEIGHT / 2)
-    for _ in range(SENTINEL_CORE_HP + 10):
-        boss.take_hit("core", 1)
-    assert boss.core_hp == 0
 
 
 # --- Phase tests ---

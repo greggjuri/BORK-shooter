@@ -7,6 +7,9 @@
 ### In Progress
 _(none)_
 
+### Recently Completed
+- [x] init-07-fix: Sentinel redesign — remove wings, simplify to armor + core opening (PRP-007b complete)
+
 ### Ready
 _(none)_
 

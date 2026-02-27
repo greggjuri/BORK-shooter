@@ -207,8 +207,6 @@ class HUD:
         self,
         core_hp: int,
         core_max: int,
-        left_wing_hp: int,
-        right_wing_hp: int,
         boss_name: str,
         phase: int,
     ) -> None:
@@ -270,32 +268,6 @@ class HUD:
             border_width=1,
         )
 
-        # Wing health pips
-        pip_size = 4
-        pip_y = bar_y + BOSS_HP_BAR_HEIGHT / 2
-        # Left wing
-        wing_max = 15  # SENTINEL_WING_HP
-        if left_wing_hp > 0:
-            lw_frac = left_wing_hp / wing_max
-            arcade.draw_circle_filled(
-                bar_left - 12, pip_y, pip_size, (0, int(255 * lw_frac), 255)
-            )
-        else:
-            arcade.draw_circle_outline(bar_left - 12, pip_y, pip_size, HUD_DIM, 1)
-        # Right wing
-        if right_wing_hp > 0:
-            rw_frac = right_wing_hp / wing_max
-            arcade.draw_circle_filled(
-                bar_left + BOSS_HP_BAR_WIDTH + 12,
-                pip_y,
-                pip_size,
-                (0, int(255 * rw_frac), 255),
-            )
-        else:
-            arcade.draw_circle_outline(
-                bar_left + BOSS_HP_BAR_WIDTH + 12, pip_y, pip_size, HUD_DIM, 1
-            )
-
         # Phase indicator
         arcade.draw_text(
             f"PHASE {phase}",
@@ -326,7 +298,7 @@ class HUD:
         )
 
     def draw_victory_text(
-        self, boss_name: str, core_pts: int, wing_pts: int, bonus_pts: int
+        self, boss_name: str, core_pts: int, bonus_pts: int
     ) -> None:
         """Draw victory overlay with point breakdown."""
         cy = SCREEN_HEIGHT / 2 + 40
@@ -349,21 +321,11 @@ class HUD:
             anchor_x="center",
             anchor_y="center",
         )
-        if wing_pts > 0:
-            arcade.draw_text(
-                f"Wings: +{wing_pts:,}",
-                SCREEN_WIDTH / 2,
-                cy - 62,
-                HUD_PRIMARY,
-                font_size=16,
-                anchor_x="center",
-                anchor_y="center",
-            )
         if bonus_pts > 0:
             arcade.draw_text(
                 f"No-Damage Bonus: +{bonus_pts:,}",
                 SCREEN_WIDTH / 2,
-                cy - 84,
+                cy - 62,
                 HUD_ACCENT,
                 font_size=16,
                 bold=True,

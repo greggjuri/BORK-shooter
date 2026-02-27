@@ -102,13 +102,6 @@ def create_aimed_shot(
     return [EnemyProjectile(x, y, vx, vy, color, size=size, shape="circle")]
 
 
-def create_wing_shot(
-    x: float, y: float, speed: float, color: tuple[int, ...]
-) -> list[EnemyProjectile]:
-    """Create a straight-left bullet from a wing."""
-    return [EnemyProjectile(x, y, -speed, 0.0, color, size=4.0)]
-
-
 def create_radial_burst(
     x: float,
     y: float,
