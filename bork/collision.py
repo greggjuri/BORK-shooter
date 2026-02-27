@@ -16,3 +16,12 @@ def point_in_circle(px: float, py: float, cx: float, cy: float, r: float) -> boo
     dx = px - cx
     dy = py - cy
     return (dx * dx + dy * dy) <= r * r
+
+
+def point_in_rect(
+    px: float, py: float, rx: float, ry: float, width: float, height: float
+) -> bool:
+    """Return True if point is inside a rectangle centered at (rx, ry)."""
+    half_w = width / 2
+    half_h = height / 2
+    return (rx - half_w) <= px <= (rx + half_w) and (ry - half_h) <= py <= (ry + half_h)

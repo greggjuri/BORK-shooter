@@ -1,6 +1,7 @@
 """Wave spawner that manages timed enemy waves."""
 
 from bork.constants import (
+    BOSS_SPAWN_AFTER_WAVES,
     ENEMIES_PER_WAVE,
     ENEMY_SIZE,
     ENEMY_SPAWN_SPACING,
@@ -31,6 +32,8 @@ class WaveSpawner:
         self.spawned_in_wave = 0
         self.wave_active = False
         self.powerup_spawn_due = False
+        self.total_waves_completed = 0
+        self.boss_triggered = False
 
     def update(self, dt: float) -> Enemy | None:
         """Tick the spawner. Returns a new Enemy if one should spawn."""
@@ -57,6 +60,12 @@ class WaveSpawner:
                 self.spawned_in_wave = 0
                 self.wave_index = (self.wave_index + 1) % len(WAVE_DEFS)
                 self.timer = WAVE_PAUSE
+                self.total_waves_completed += 1
+                if (
+                    self.total_waves_completed >= BOSS_SPAWN_AFTER_WAVES
+                    and not self.boss_triggered
+                ):
+                    self.boss_triggered = True
             else:
                 self.timer = ENEMY_SPAWN_SPACING
 
@@ -77,3 +86,5 @@ class WaveSpawner:
         self.spawned_in_wave = 0
         self.wave_active = False
         self.powerup_spawn_due = False
+        self.total_waves_completed = 0
+        self.boss_triggered = False

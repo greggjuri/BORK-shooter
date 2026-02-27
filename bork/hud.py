@@ -5,6 +5,9 @@ import math
 import arcade
 
 from bork.constants import (
+    BOSS_HP_BAR_HEIGHT,
+    BOSS_HP_BAR_WIDTH,
+    BOSS_HP_BAR_Y,
     COMBO_MILESTONE_DURATION,
     COMBO_MILESTONE_FADE,
     HUD_ACCENT,
@@ -25,6 +28,7 @@ from bork.constants import (
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
     STARTING_LIVES,
+    WARNING_TEXT_COLOR,
 )
 
 
@@ -196,3 +200,173 @@ class HUD:
             anchor_x="center",
             anchor_y="center",
         )
+
+    # --- Boss HUD elements ---
+
+    def draw_boss_health_bar(
+        self,
+        core_hp: int,
+        core_max: int,
+        left_wing_hp: int,
+        right_wing_hp: int,
+        boss_name: str,
+        phase: int,
+    ) -> None:
+        """Draw the boss health bar at top of screen."""
+        cx = SCREEN_WIDTH / 2
+        bar_y = BOSS_HP_BAR_Y
+
+        # Boss name
+        arcade.draw_text(
+            boss_name,
+            cx,
+            bar_y + BOSS_HP_BAR_HEIGHT + 8,
+            WARNING_TEXT_COLOR,
+            font_size=12,
+            bold=True,
+            anchor_x="center",
+            anchor_y="bottom",
+        )
+
+        # Background bar
+        bar_left = cx - BOSS_HP_BAR_WIDTH / 2
+        arcade.draw_lrbt_rectangle_filled(
+            bar_left,
+            bar_left + BOSS_HP_BAR_WIDTH,
+            bar_y,
+            bar_y + BOSS_HP_BAR_HEIGHT,
+            (20, 20, 30),
+        )
+
+        # Fill bar (color shifts green → yellow → red)
+        frac = core_hp / core_max if core_max > 0 else 0
+        fill_w = BOSS_HP_BAR_WIDTH * frac
+        if frac > 0.5:
+            t = (frac - 0.5) * 2  # 1 at full, 0 at half
+            r = int(255 * (1 - t))
+            g = 255
+        else:
+            t = frac * 2  # 1 at half, 0 at empty
+            r = 255
+            g = int(255 * t)
+        bar_color = (r, g, 0)
+
+        if fill_w > 0:
+            arcade.draw_lrbt_rectangle_filled(
+                bar_left,
+                bar_left + fill_w,
+                bar_y,
+                bar_y + BOSS_HP_BAR_HEIGHT,
+                bar_color,
+            )
+
+        # Outline
+        arcade.draw_lrbt_rectangle_outline(
+            bar_left,
+            bar_left + BOSS_HP_BAR_WIDTH,
+            bar_y,
+            bar_y + BOSS_HP_BAR_HEIGHT,
+            HUD_DIM,
+            border_width=1,
+        )
+
+        # Wing health pips
+        pip_size = 4
+        pip_y = bar_y + BOSS_HP_BAR_HEIGHT / 2
+        # Left wing
+        wing_max = 15  # SENTINEL_WING_HP
+        if left_wing_hp > 0:
+            lw_frac = left_wing_hp / wing_max
+            arcade.draw_circle_filled(
+                bar_left - 12, pip_y, pip_size, (0, int(255 * lw_frac), 255)
+            )
+        else:
+            arcade.draw_circle_outline(bar_left - 12, pip_y, pip_size, HUD_DIM, 1)
+        # Right wing
+        if right_wing_hp > 0:
+            rw_frac = right_wing_hp / wing_max
+            arcade.draw_circle_filled(
+                bar_left + BOSS_HP_BAR_WIDTH + 12,
+                pip_y,
+                pip_size,
+                (0, int(255 * rw_frac), 255),
+            )
+        else:
+            arcade.draw_circle_outline(
+                bar_left + BOSS_HP_BAR_WIDTH + 12, pip_y, pip_size, HUD_DIM, 1
+            )
+
+        # Phase indicator
+        arcade.draw_text(
+            f"PHASE {phase}",
+            cx,
+            bar_y - 4,
+            HUD_DIM,
+            font_size=9,
+            anchor_x="center",
+            anchor_y="top",
+        )
+
+    def draw_warning_text(self, timer: float) -> None:
+        """Draw pulsing WARNING text at screen center."""
+        # Pulse 3 times over the warning duration
+        pulse = math.sin(timer * 6 * math.pi)
+        alpha = int(180 + 75 * pulse)
+        alpha = max(0, min(255, alpha))
+        color = (*WARNING_TEXT_COLOR[:3], alpha)
+        arcade.draw_text(
+            "WARNING",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2,
+            color,
+            font_size=48,
+            bold=True,
+            anchor_x="center",
+            anchor_y="center",
+        )
+
+    def draw_victory_text(
+        self, boss_name: str, core_pts: int, wing_pts: int, bonus_pts: int
+    ) -> None:
+        """Draw victory overlay with point breakdown."""
+        cy = SCREEN_HEIGHT / 2 + 40
+        arcade.draw_text(
+            f"{boss_name} DESTROYED",
+            SCREEN_WIDTH / 2,
+            cy,
+            HUD_ACCENT,
+            font_size=32,
+            bold=True,
+            anchor_x="center",
+            anchor_y="center",
+        )
+        arcade.draw_text(
+            f"Core: +{core_pts:,}",
+            SCREEN_WIDTH / 2,
+            cy - 40,
+            HUD_PRIMARY,
+            font_size=16,
+            anchor_x="center",
+            anchor_y="center",
+        )
+        if wing_pts > 0:
+            arcade.draw_text(
+                f"Wings: +{wing_pts:,}",
+                SCREEN_WIDTH / 2,
+                cy - 62,
+                HUD_PRIMARY,
+                font_size=16,
+                anchor_x="center",
+                anchor_y="center",
+            )
+        if bonus_pts > 0:
+            arcade.draw_text(
+                f"No-Damage Bonus: +{bonus_pts:,}",
+                SCREEN_WIDTH / 2,
+                cy - 84,
+                HUD_ACCENT,
+                font_size=16,
+                bold=True,
+                anchor_x="center",
+                anchor_y="center",
+            )

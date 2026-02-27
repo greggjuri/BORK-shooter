@@ -2,6 +2,14 @@
 
 import arcade
 
+from bork.boss import Sentinel
+from bork.boss_attacks import EnemyProjectile
+from bork.boss_fight import (
+    update_boss_dying,
+    update_boss_fight,
+    update_boss_warning,
+    update_victory,
+)
 from bork.collision import circle_circle, point_in_circle
 from bork.constants import (
     COLOR_BACKGROUND,
@@ -24,10 +32,18 @@ from bork.constants import (
     SCREEN_SHAKE_INTENSITY,
     SCREEN_TITLE,
     SCREEN_WIDTH,
+    SENTINEL_CORE_HP,
+    SENTINEL_CORE_POINTS,
     SPEED_BOOST_MULTIPLIER,
     STARTING_LIVES,
+    STATE_BOSS_DYING,
+    STATE_BOSS_FIGHT,
+    STATE_BOSS_WARNING,
     STATE_GAME_OVER,
     STATE_PLAYING,
+    STATE_VICTORY,
+    WARNING_DURATION,
+    WARNING_FLASH_COLOR,
 )
 from bork.enemy import Enemy
 from bork.explosions import (
@@ -69,6 +85,16 @@ class BorkGame(arcade.Window):
         self.hud: HUD = HUD()
         self.score_popups: ScorePopupManager = ScorePopupManager()
         self.lives: int = STARTING_LIVES
+        # Boss state
+        self.boss: Sentinel | None = None
+        self.enemy_projectiles: list[EnemyProjectile] = []
+        self.boss_warning_timer: float = 0.0
+        self.player_hit_during_boss: bool = False
+        self.victory_timer: float = 0.0
+        self.boss_death_explosion_timer: float = 0.0
+        self.victory_points_awarded: bool = False
+        self.victory_wing_pts: int = 0
+        self.victory_bonus_pts: int = 0
 
     def setup(self) -> None:
         """Initialize game state."""
@@ -87,6 +113,15 @@ class BorkGame(arcade.Window):
         self.hud = HUD()
         self.score_popups = ScorePopupManager()
         self.lives = STARTING_LIVES
+        self.boss = None
+        self.enemy_projectiles = []
+        self.boss_warning_timer = 0.0
+        self.player_hit_during_boss = False
+        self.victory_timer = 0.0
+        self.boss_death_explosion_timer = 0.0
+        self.victory_points_awarded = False
+        self.victory_wing_pts = 0
+        self.victory_bonus_pts = 0
 
     def on_update(self, dt: float) -> None:
         """Update all game entities."""
@@ -109,6 +144,19 @@ class BorkGame(arcade.Window):
         self.hud.update(dt)
         self.score_popups.update(dt)
 
+        # Boss state dispatch
+        if self.state == STATE_BOSS_WARNING:
+            update_boss_warning(self, dt)
+            return
+        if self.state == STATE_BOSS_FIGHT:
+            update_boss_fight(self, dt)
+            return
+        if self.state == STATE_BOSS_DYING:
+            update_boss_dying(self, dt)
+            return
+        if self.state == STATE_VICTORY:
+            update_victory(self, dt)
+            return
         if self.state != STATE_PLAYING:
             return
 
@@ -124,6 +172,16 @@ class BorkGame(arcade.Window):
         enemy = self.wave_spawner.update(dt)
         if enemy is not None:
             self.enemies.append(enemy)
+
+        # Check boss trigger
+        if self.wave_spawner.boss_triggered:
+            self.wave_spawner.boss_triggered = False
+            self.state = STATE_BOSS_WARNING
+            self.boss_warning_timer = WARNING_DURATION
+            self.screen_flash = ScreenFlash(
+                WARNING_FLASH_COLOR[:3], 0.1, WARNING_DURATION
+            )
+            return
 
         # Update enemies and remove off-screen ones
         for e in self.enemies:
@@ -278,11 +336,23 @@ class BorkGame(arcade.Window):
         for p in self.powerups:
             p.draw()
 
-        if self.state == STATE_PLAYING:
+        # Draw boss (behind player, in front of enemies)
+        if self.boss and self.state in (
+            STATE_BOSS_FIGHT,
+            STATE_BOSS_DYING,
+            STATE_VICTORY,
+        ):
+            self.boss.draw()
+
+        if self.state in (STATE_PLAYING, STATE_BOSS_WARNING, STATE_BOSS_FIGHT):
             self.player.draw()
 
         for proj in self.projectiles:
             proj.draw()
+
+        # Enemy projectiles
+        for ep in self.enemy_projectiles:
+            ep.draw()
 
         self.particle_system.draw()
 
@@ -305,6 +375,30 @@ class BorkGame(arcade.Window):
             self.lives,
             self._get_active_powerups(),
         )
+
+        # Boss health bar (HUD layer, no shake)
+        if self.boss and self.state in (STATE_BOSS_FIGHT, STATE_BOSS_DYING):
+            self.hud.draw_boss_health_bar(
+                self.boss.core_hp,
+                SENTINEL_CORE_HP,
+                self.boss.left_wing_hp,
+                self.boss.right_wing_hp,
+                "SENTINEL",
+                self.boss.phase,
+            )
+
+        # Warning overlay
+        if self.state == STATE_BOSS_WARNING:
+            self.hud.draw_warning_text(self.boss_warning_timer)
+
+        # Victory overlay
+        if self.state == STATE_VICTORY:
+            self.hud.draw_victory_text(
+                "SENTINEL",
+                SENTINEL_CORE_POINTS,
+                self.victory_wing_pts,
+                self.victory_bonus_pts,
+            )
 
         # Game over overlay
         if self.state == STATE_GAME_OVER:
@@ -340,7 +434,7 @@ class BorkGame(arcade.Window):
         """Track key presses."""
         self.keys_pressed.add(key)
 
-        if self.state == STATE_GAME_OVER and key == arcade.key.R:
+        if key == arcade.key.R and self.state in (STATE_GAME_OVER, STATE_VICTORY):
             self.setup()
 
     def on_key_release(self, key: int, modifiers: int) -> None:

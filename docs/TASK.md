@@ -1,8 +1,8 @@
 # B.O.R.K. - Task Tracking
 
-## Current Sprint: Progression
+## Current Sprint: Content
 
-**Goal**: Scoring, UI, and sound
+**Goal**: Boss fights and progression
 
 ### In Progress
 _(none)_
@@ -32,7 +32,7 @@ _(none)_
 - [ ] init-06: Sound system (SFX, music)
 
 ### Phase 4: Content
-- [ ] init-07: Boss fights
+- [x] init-07: Boss fights (PRP-007 complete)
 - [ ] init-08: Levels & progression
 - [ ] Multiple enemy types
 
