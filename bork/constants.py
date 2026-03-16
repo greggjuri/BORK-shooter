@@ -38,7 +38,7 @@ ENEMY_SPAWN_SPACING = 0.3  # seconds between each enemy in a wave
 
 # Sine wave pattern
 SINE_AMPLITUDE = 80.0  # pixels
-SINE_FREQUENCY = 2.0  # oscillations per second
+SINE_FREQUENCY = 1.6  # oscillations per second
 
 # Spawn Y positions (fraction of screen height)
 WAVE_TOP_Y = 0.75
