@@ -5,7 +5,10 @@ import math
 import arcade
 
 from bork.constants import (
-    COLOR_PLAYER,
+    EXHAUST_COLOR_FAR,
+    EXHAUST_COLOR_INNER,
+    EXHAUST_COLOR_MID,
+    EXHAUST_COLOR_OUTER,
     INVULNERABLE_BLINK_RATE,
     PLAYER_ACCELERATION,
     PLAYER_FRICTION,
@@ -97,9 +100,11 @@ class Player:
 
         cx, cy = self.x, self.y
 
-        # Engine exhaust glow (behind ship)
-        arcade.draw_ellipse_filled(cx - 33, cy, 24, 12, (*COLOR_PLAYER[:3], 38))
-        arcade.draw_ellipse_filled(cx - 33, cy, 16, 8, (*COLOR_PLAYER[:3], 76))
+        # Engine exhaust glow (layered red-to-orange gradient, outer to inner)
+        arcade.draw_ellipse_filled(cx - 48, cy, 48, 22, (*EXHAUST_COLOR_FAR, 25))
+        arcade.draw_ellipse_filled(cx - 43, cy, 36, 18, (*EXHAUST_COLOR_OUTER, 51))
+        arcade.draw_ellipse_filled(cx - 38, cy, 24, 14, (*EXHAUST_COLOR_MID, 102))
+        arcade.draw_ellipse_filled(cx - 35, cy, 14, 10, (*EXHAUST_COLOR_INNER, 153))
 
         # Engine block (small rect at rear)
         arcade.draw_lbwh_rectangle_filled(cx - 33, cy - 10, 6, 20, SHIP_ACCENT_COLOR)

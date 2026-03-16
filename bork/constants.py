@@ -164,6 +164,12 @@ SHIP_ACCENT_COLOR = (0, 34, 51)  # #002233 — engine block
 SHIP_COCKPIT_COLOR = (0, 51, 68)  # #003344 — cockpit accent
 SHIP_OUTLINE_COLOR = (0, 220, 255)  # bright cyan stroke
 
+# Engine exhaust glow (inner to outer)
+EXHAUST_COLOR_INNER = (180, 30, 10)  # dark red, closest to engine
+EXHAUST_COLOR_MID = (220, 50, 20)  # red, middle layer
+EXHAUST_COLOR_OUTER = (255, 100, 30)  # orange-red, outer layer
+EXHAUST_COLOR_FAR = (255, 160, 50)  # light orange, furthest
+
 # === Boss System ===
 
 # Boss spawn
