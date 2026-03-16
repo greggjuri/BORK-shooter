@@ -102,12 +102,8 @@ class Player:
         arcade.draw_ellipse_filled(cx - 33, cy, 16, 8, (*COLOR_PLAYER[:3], 76))
 
         # Engine block (small rect at rear)
-        arcade.draw_lrtb_rectangle_filled(
-            cx - 33, cx - 27, cy + 10, cy - 10, SHIP_ACCENT_COLOR
-        )
-        arcade.draw_lrtb_rectangle_outline(
-            cx - 33, cx - 27, cy + 10, cy - 10, SHIP_OUTLINE_COLOR
-        )
+        arcade.draw_rectangle_filled(cx - 30, cy, 6, 20, SHIP_ACCENT_COLOR)
+        arcade.draw_rectangle_outline(cx - 30, cy, 6, 20, SHIP_OUTLINE_COLOR)
 
         # Engine nozzle lines (3 short lines extending left)
         for offset in (-6, 0, 6):
