@@ -157,6 +157,13 @@ COLOR_PLAYER = (0, 200, 255)
 COLOR_LASER = (255, 80, 80)
 COLOR_STAR = (255, 255, 255)
 
+# Ship colors
+SHIP_BODY_COLOR = (26, 58, 74)  # #1a3a4a — main hull
+SHIP_DARK_COLOR = (13, 42, 56)  # #0d2a38 — wing fins
+SHIP_ACCENT_COLOR = (0, 34, 51)  # #002233 — engine block
+SHIP_COCKPIT_COLOR = (0, 51, 68)  # #003344 — cockpit accent
+SHIP_OUTLINE_COLOR = (0, 220, 255)  # bright cyan stroke
+
 # === Boss System ===
 
 # Boss spawn

@@ -13,6 +13,11 @@ from bork.constants import (
     PLAYER_SHIP_SIZE,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
+    SHIP_ACCENT_COLOR,
+    SHIP_BODY_COLOR,
+    SHIP_COCKPIT_COLOR,
+    SHIP_DARK_COLOR,
+    SHIP_OUTLINE_COLOR,
     SHOOT_COOLDOWN,
     TARGET_FPS,
 )
@@ -85,20 +90,59 @@ class Player:
         self.y = max(PLAYER_SHIP_SIZE, min(SCREEN_HEIGHT - PLAYER_SHIP_SIZE, self.y))
 
     def draw(self) -> None:
-        """Draw the ship as a right-pointing triangle."""
+        """Draw the ship as a multi-polygon geometric dart."""
         if self.is_invulnerable:
             if int(self.invulnerable_timer * INVULNERABLE_BLINK_RATE * 2) % 2 == 0:
                 return
-        s = PLAYER_SHIP_SIZE
-        arcade.draw_triangle_filled(
-            self.x + s,
-            self.y,  # nose (right)
-            self.x - s,
-            self.y + s * 0.7,  # top-left
-            self.x - s,
-            self.y - s * 0.7,  # bottom-left
-            COLOR_PLAYER,
+
+        cx, cy = self.x, self.y
+
+        # Engine exhaust glow (behind ship)
+        arcade.draw_ellipse_filled(cx - 33, cy, 24, 12, (*COLOR_PLAYER[:3], 38))
+        arcade.draw_ellipse_filled(cx - 33, cy, 16, 8, (*COLOR_PLAYER[:3], 76))
+
+        # Engine block (small rect at rear)
+        arcade.draw_lrtb_rectangle_filled(
+            cx - 33, cx - 27, cy + 10, cy - 10, SHIP_ACCENT_COLOR
         )
+        arcade.draw_lrtb_rectangle_outline(
+            cx - 33, cx - 27, cy + 10, cy - 10, SHIP_OUTLINE_COLOR
+        )
+
+        # Engine nozzle lines (3 short lines extending left)
+        for offset in (-6, 0, 6):
+            arcade.draw_line(
+                cx - 33, cy + offset, cx - 38, cy + offset, SHIP_OUTLINE_COLOR
+            )
+
+        # Main body
+        body = [
+            (cx + 40, cy),
+            (cx - 10, cy - 14),
+            (cx - 30, cy - 16),
+            (cx - 30, cy + 16),
+            (cx - 10, cy + 14),
+        ]
+        arcade.draw_polygon_filled(body, SHIP_BODY_COLOR)
+        arcade.draw_polygon_outline(body, SHIP_OUTLINE_COLOR)
+
+        # Top wing fin
+        top_fin = [(cx - 5, cy - 14), (cx - 30, cy - 28), (cx - 30, cy - 16)]
+        arcade.draw_polygon_filled(top_fin, SHIP_DARK_COLOR)
+        arcade.draw_polygon_outline(top_fin, SHIP_OUTLINE_COLOR)
+
+        # Bottom wing fin
+        bot_fin = [(cx - 5, cy + 14), (cx - 30, cy + 28), (cx - 30, cy + 16)]
+        arcade.draw_polygon_filled(bot_fin, SHIP_DARK_COLOR)
+        arcade.draw_polygon_outline(bot_fin, SHIP_OUTLINE_COLOR)
+
+        # Center stripe (faint horizontal line along fuselage)
+        arcade.draw_line(cx + 38, cy, cx - 30, cy, (*SHIP_OUTLINE_COLOR[:3], 102))
+
+        # Cockpit accent
+        cockpit = [(cx + 40, cy), (cx + 10, cy - 5), (cx + 10, cy + 5)]
+        arcade.draw_polygon_filled(cockpit, SHIP_COCKPIT_COLOR)
+        arcade.draw_polygon_outline(cockpit, SHIP_OUTLINE_COLOR)
 
     def can_shoot(self) -> bool:
         """Return True if shoot cooldown has elapsed."""
