@@ -33,6 +33,9 @@ _(none)_
 - [x] fix: Halved player fire rate (0.18 → 0.36 cooldown)
 - [x] feat: Redesigned speed powerup as glassy button
 - [x] init-09: Tiered powerup system — speed and fire rate 3-level tiers, death penalty, HUD pips (PRP-009 complete)
+- [x] fix: Widen speed tier gaps, fix HUD tier indicator spacing
+- [x] fix: Instant ship movement at tier speed, remove acceleration ramp (ADR-004 revised)
+- [x] fix: Reduce speed tier values for instant movement model (200/300/420)
 
 ---
 

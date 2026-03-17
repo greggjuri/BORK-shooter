@@ -85,29 +85,28 @@ Start with **geometric shapes**, add pixel art in a polish pass.
 
 ---
 
-## ADR-004: Momentum-Based Movement
+## ADR-004: Instant Movement at Tier Speed
 
-**Date**: 2025-02-15  
-**Status**: Accepted
+**Date**: 2025-02-15 (revised 2026-03-17)
+**Status**: Accepted (supersedes original momentum-based design)
 
 ### Context
-Player ship movement style. Options:
-- Instant movement (press right = immediately at max speed)
-- Momentum-based (acceleration/deceleration)
+Player ship movement was originally momentum-based (acceleration + friction). After adding tiered speed powerups with instant movement, the acceleration ramp-up masked the difference between tiers — collecting a powerup didn't feel noticeably different until the ship had time to accelerate to the new max.
 
 ### Decision
-**Momentum-based** movement with acceleration and friction.
+**Instant movement** — when a direction key is held, the ship moves at `SPEED_LEVELS[speed_level - 1]` immediately. When released, the ship stops instantly. No acceleration or friction.
 
 ### Rationale
-- Matches Delta/Sanxion feel ("sliding on ice")
-- More satisfying and skill-based
-- Allows for subtle control — tap for small adjustments, hold for speed
-- Makes dodging feel more tense
+- Tier speed changes are felt immediately on powerup collection
+- Simpler movement model — easier to predict and control
+- Removes PLAYER_ACCELERATION, PLAYER_FRICTION, TARGET_FPS from player.py
+- Diagonal movement still normalized to prevent faster diagonal speed
+- Speed values tuned lower (200/300/420) to compensate for no ramp-up
 
 ### Consequences
-- Need to tune acceleration, friction, and max speed carefully
-- Diagonal movement needs normalization to prevent faster diagonal speed
-- May feel floaty to players used to instant response — values are tunable
+- No "sliding on ice" feel — movement is direct and responsive
+- Diagonal normalization still required
+- Speed tuning is simpler (one value per tier instead of acceleration + friction + max speed)
 
 ---
 
