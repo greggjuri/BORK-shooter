@@ -232,6 +232,107 @@ Replace wing system with a 2-zone damage model: core opening (2x damage) and arm
 
 ---
 
+## ADR-010: Polygon-Based Ship Hulls
+
+**Date**: 2026-03-16
+**Status**: Accepted
+
+### Context
+The Sentinel boss was rendering as a flat rectangle — `draw_lrbt_rectangle_filled` for the body with a rectangle "opening" painted on top. This looked wrong; the concept called for a swept, ship-like silhouette with a real gap for the core opening.
+
+### Decision
+Replace rectangle-based boss rendering with mirrored polygon hulls (top half and bottom half) using `draw_polygon_filled`. Each hull half has an outer shell and an inset inner armor plate. The gap between the two halves IS the core opening — no separate opening rectangle needed.
+
+### Rationale
+- Polygons create a proper ship silhouette (tapered nose, widening body toward rear engines)
+- Real gap between hull halves makes the core opening visually obvious
+- Layered polygons (outer hull + inner plate) add depth without sprites
+- Detail elements (panel lines, weapon ports, vents, nose ellipse) add visual interest cheaply
+- Pattern matches the player ship's polygon-based rendering
+
+### Consequences
+- Hull vertex coordinates are defined as module-level tuples, scaled from a 160px reference to SENTINEL_WIDTH
+- Collision detection still uses simple rectangles (point_in_rect) — visual and collision shapes are decoupled
+- Adding new boss types should follow the same mirrored-polygon pattern
+- `SENTINEL_ARMOR_COLOR` and `SENTINEL_OPENING_COLOR` constants are no longer used by boss.py draw code (retained for potential future use)
+
+---
+
+## ADR-011: Layered Gradient Engine Exhaust
+
+**Date**: 2026-03-16
+**Status**: Accepted
+
+### Context
+Engine exhaust effects on both the player ship and boss used simple shapes. The player had a proven layered ellipse approach defined in `EXHAUST_LAYERS` — a tuple of (offset, width, height, r, g, b, alpha) values sorted outermost-first.
+
+### Decision
+Apply the same layered gradient pattern to the Sentinel's engine exhaust. Define `SENTINEL_EXHAUST_LAYERS` as a 10-layer tuple graduating from light blue (140, 140, 255) at low opacity to dark blue (30, 30, 180) at higher opacity. Draw exhaust for both top and bottom engine positions.
+
+### Rationale
+- Consistent visual language between player and boss
+- Loop-over-tuples pattern is simple and fast
+- Constants-driven: easy to tune colors and sizes without touching draw code
+
+### Consequences
+- Each engine draws 10 ellipses per frame (20 total for two engines) — negligible performance impact
+- Exhaust positions are hardcoded relative to hull vertex coordinates
+
+---
+
+## ADR-012: Massive Multi-Burst Boss Death Sequence
+
+**Date**: 2026-03-16
+**Status**: Accepted
+
+### Context
+The original boss death was a single explosion burst (50-80 particles) with a screen shake. For a boss fight that takes significant effort to win, the payoff felt underwhelming.
+
+### Decision
+Overhaul the boss death to be deliberately excessive ("too much is not enough"):
+- 2.5-second death sequence with sub-explosions every 0.08s (25-40 particles each)
+- Escalating screen shake throughout the sequence
+- Final detonation: 5 overlapping full explosions (180-250 particles each, ~1000 total)
+- Boss hull disappears at final detonation, leaving only particles
+- Particle pool bumped from 500 to 1500
+
+### Rationale
+- Boss death should feel like an event — the reward for sustained combat
+- Staggered explosions across the hull create a "breaking apart" effect
+- Escalating shake builds tension before the finale
+- Hull vanishing at the climax makes the explosion feel like it actually destroyed something
+
+### Consequences
+- Particle pool increased 3x (1500) — may need monitoring on lower-end hardware
+- Boss death duration increased from 2.0s to 2.5s
+- Victory state begins only after particles clear (3.0s victory display)
+
+---
+
+## ADR-013: Circular Particles with Glow Layers
+
+**Date**: 2026-03-16
+**Status**: Accepted
+
+### Context
+Explosion particles used mixed shapes (squares, triangles, circles) which looked jagged and inconsistent. Particles disappeared abruptly at end of life.
+
+### Decision
+All explosion particles now render as circles (`draw_circle_filled`). Particles larger than 4px radius get a glow layer — a second circle at 1.6x size with 1/4 opacity drawn behind. Size distribution uses a tiered system: 60% tiny (1-3px), 30% medium (3-8px), 10% large (6-14px).
+
+### Rationale
+- Circles look smoother and more natural for explosions/fire
+- Glow layers on large particles create a soft halo effect without shaders
+- Tiered sizes create depth — many tiny sparks with a few big glowing embers
+- Alpha fadeout was already implemented (`alpha = 255 * (1 - progress)`)
+
+### Consequences
+- `shape` parameter retained on Particle class but effectively unused for non-circle values
+- Slightly higher draw cost per large particle (2 draw calls instead of 1)
+- Factory functions no longer import `*_SIZE` constants (sizes are inline in `_pick_size` calls)
+
+---
+
 ## Template for New ADRs
 
 ```markdown

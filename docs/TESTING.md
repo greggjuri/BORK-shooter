@@ -21,13 +21,22 @@ pytest bork/tests/ -k "player"
 ```
 bork/tests/
 ├── __init__.py
-├── test_player.py        # Player movement, shooting cooldown
-├── test_projectile.py    # Projectile movement, despawning
-├── test_starfield.py     # Star spawning, parallax scrolling
-├── test_enemies.py       # Enemy patterns, collision (future)
-├── test_powerups.py      # Powerup effects (future)
-└── test_collision.py     # Collision detection (future)
+├── test_player.py        # Player movement, shooting cooldown (159 lines)
+├── test_projectile.py    # Projectile movement, despawning (29 lines)
+├── test_starfield.py     # Star spawning, parallax scrolling (35 lines)
+├── test_enemy.py         # Enemy entity, patterns (38 lines)
+├── test_collision.py     # Collision helpers (28 lines)
+├── test_powerup.py       # Powerup entity (35 lines)
+├── test_scoring.py       # Scoring system, multiplier, combo (100 lines)
+├── test_explosions.py    # Explosion factories, particle shapes (59 lines)
+├── test_particles.py     # Particle system, lifecycle (93 lines)
+├── test_screen_effects.py # ScreenFlash, ScreenShake (44 lines)
+├── test_wave_spawner.py  # Wave spawning, boss trigger (155 lines)
+├── test_hud.py           # HUD rendering (35 lines)
+└── test_boss.py          # Sentinel boss entity, phases (273 lines)
 ```
+
+**116 tests passing** as of 2026-03-16.
 
 ## What to Test
 
@@ -55,22 +64,50 @@ bork/tests/
 - Stars move leftward on update
 - Stars wrap from left edge to right edge
 
-**Enemies (future):**
-- Pattern movement is correct
+**Enemies:**
+- Pattern movement is correct (straight, sine, diagonal)
 - Enemies spawn at correct positions
-- Health decreases on hit
-- Enemies despawn when destroyed or off-screen
+- Enemies despawn when off-screen
+- Bat wing wobble and bob animation
 
-**Powerups (future):**
+**Powerups:**
 - Powerups drift leftward
 - Powerups despawn off-screen
-- Correct effect applied when collected
+- Pulse animation
 
-**Collision (future):**
-- Player projectile hits enemy
-- Enemy projectile hits player
-- Player collects powerup
-- Player collision with enemy
+**Collision:**
+- Point-in-circle detection
+- Point-in-rect detection
+
+**Scoring:**
+- Score increments on kill
+- Multiplier builds and decays
+- Combo counter and milestones
+
+**Explosions:**
+- All factories produce correct particle counts
+- All particles use circle shape
+- Correct start positions
+
+**Particles:**
+- Lifecycle (age, death)
+- Color interpolation and alpha fade
+- Size interpolation
+
+**Boss (Sentinel):**
+- Phase transitions at HP thresholds
+- State machine (entering, fighting, dying)
+- Attack timing (spread, aimed, radial burst, beam)
+- Damage handling (core vs armor zones)
+- Movement tracking and clamping
+
+**Wave Spawner:**
+- Initial delay before first wave
+- Correct enemy count per wave
+- Wave pause timing
+- Pattern cycling (3 patterns)
+- Boss trigger after wave 9
+- Powerup spawn signaling
 
 ### Integration Tests (Manual)
 
@@ -83,8 +120,13 @@ Play the game and verify:
 | Shooting | Spacebar fires at cooldown rate, not too fast, not too slow |
 | Projectiles | Lasers travel right and disappear off-screen |
 | Starfield | Two layers visible, back layer slower/dimmer |
-| Frame rate | No stuttering or hitching during gameplay |
+| Frame rate | No stuttering or hitching during gameplay (especially boss death with 1000+ particles) |
 | Input | All controls responsive, no stuck keys |
+| Boss entry | Warning phase → Sentinel slides in from right |
+| Boss phases | Attack patterns escalate as HP drops (spread → aimed → radial + beam) |
+| Boss death | Staggered sub-explosions across hull, escalating shake, massive finale, hull vanishes |
+| Powerups | Cleared when boss warning starts, no stale powerups during boss fight |
+| Particle glow | Large particles have visible soft glow halo behind them |
 
 ## Testing Tips
 
@@ -162,5 +204,8 @@ print(f"Player: pos=({self.x:.1f}, {self.y:.1f}) vel=({self.vx:.1f}, {self.vy:.1
 Document areas that need more testing:
 
 - [ ] Frame rate independence under varying dt
-- [ ] Behavior when many entities on screen
+- [ ] Behavior when many entities on screen (especially boss death particle load)
 - [ ] Edge cases with simultaneous collisions
+- [ ] Boss beam collision accuracy at screen edges
+- [ ] Particle pool trimming behavior under heavy load (1500 pool limit)
+- [ ] Player respawn during boss fight (invulnerability + position reset)

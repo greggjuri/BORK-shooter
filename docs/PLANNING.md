@@ -12,6 +12,8 @@ B.O.R.K. is a horizontal scrolling shoot 'em up built with Python and the Arcade
 
 **Design principles:**
 - "Too much is not enough" — visual effects (especially explosions, boss deaths, screen shake) should feel excessive. If it seems like too much, it's probably about right.
+- Polygon-based ship rendering — ships are built from mirrored polygon hulls with layered details (armor plates, panel lines, weapon ports, vents), not rectangles. This applies to both the player ship and the Sentinel boss.
+- Layered gradient effects — engine exhaust uses 8-10 concentric ellipses graduating from bright inner core to dim outer glow. Both player and boss engines use this pattern.
 
 ## Tech Stack
 
@@ -74,7 +76,9 @@ B.O.R.K. is a horizontal scrolling shoot 'em up built with Python and the Arcade
 │    - Player, projectiles, boss, enemy projectiles        │
 │    - Boss collisions (core opening=2x, armor=1x)        │
 │    - Remaining enemies still interactive                 │
-│  STATE_BOSS_DYING → STATE_VICTORY → restart              │
+│  STATE_BOSS_DYING (2.5s staggered explosions, escalating  │
+│    shake, boss hull visible) → final detonation → hull    │
+│    disappears → STATE_VICTORY → restart                   │
 └──────────────────────────────────────────────────────────┘
                             │
                             ▼
@@ -183,6 +187,11 @@ Powerup:
 
 ### Phase 4: Content (Current)
 - [x] Boss fights (Sentinel: 3 phases, armor + core opening, beam attack)
+- [x] Sentinel visual redesign — polygon hull with real core gap, layered exhaust
+- [x] Massive multi-burst boss death explosion (staggered sub-explosions, 1000+ particles)
+- [x] Smooth circular particles with glow layers and opacity fade
+- [x] Boss disappears on final detonation
+- [x] Powerups cleared on boss transition
 - [ ] Multiple enemy types
 - [ ] Multiple levels/zones
 - [ ] Difficulty progression
@@ -191,7 +200,8 @@ Powerup:
 - [ ] Sound effects
 - [ ] Music
 - [ ] Pixel art sprites
-- [x] Screen shake (implemented in Phase 2)
+- [x] Screen shake (implemented in Phase 2, enhanced for boss death)
+- [x] Particle system overhaul — all circles, tiered sizes, glow layers
 - [ ] Title screen / menus
 - [ ] High score persistence
 
@@ -220,21 +230,21 @@ Target: Each file under 500 lines
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| constants.py | ~240 | All tunable values |
-| game.py | ~455 | Main window and loop |
-| player.py | ~80 | Player ship |
-| projectile.py | ~30 | Player projectiles |
-| starfield.py | ~60 | Parallax background |
-| enemy.py | ~60 | Enemy entity |
+| constants.py | ~305 | All tunable values |
+| game.py | ~453 | Main window and loop |
+| player.py | ~149 | Player ship (polygon hull, exhaust) |
+| projectile.py | ~38 | Player projectiles |
+| starfield.py | ~57 | Parallax background |
+| enemy.py | ~115 | Enemy entity (bat wing design) |
 | wave_spawner.py | ~90 | Wave spawning, boss trigger |
-| powerup.py | ~50 | Powerup entity |
-| collision.py | ~30 | Collision helpers |
-| explosions.py | ~180 | Particle factory functions |
-| particles.py | ~100 | ParticleSystem + Particle |
-| scoring.py | ~70 | ScoringSystem (multiplier, combo) |
-| score_popup.py | ~60 | Floating score text |
-| screen_effects.py | ~60 | ScreenFlash, ScreenShake |
-| hud.py | ~335 | HUD, boss health bar, warning, victory |
-| boss.py | ~380 | Sentinel boss entity |
+| powerup.py | ~51 | Powerup entity |
+| collision.py | ~27 | Collision helpers |
+| explosions.py | ~181 | Particle factory functions |
+| particles.py | ~105 | ParticleSystem + Particle (circles + glow) |
+| scoring.py | ~53 | ScoringSystem (multiplier, combo) |
+| score_popup.py | ~74 | Floating score text |
+| screen_effects.py | ~68 | ScreenFlash, ScreenShake |
+| hud.py | ~334 | HUD, boss health bar, warning, victory |
+| boss.py | ~410 | Sentinel boss entity (polygon hull) |
 | boss_attacks.py | ~125 | EnemyProjectile + attack factories |
-| boss_fight.py | ~225 | Boss state handlers + collision |
+| boss_fight.py | ~242 | Boss state handlers + collision |
