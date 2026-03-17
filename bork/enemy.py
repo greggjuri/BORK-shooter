@@ -8,7 +8,6 @@ from bork.constants import (
     ENEMY_BODY_COLOR,
     ENEMY_EYE_BRIGHT,
     ENEMY_EYE_COLOR,
-    ENEMY_HULL_COLOR,
     ENEMY_PLATE_COLOR,
     ENEMY_SIZE,
     ENEMY_SPEED,
@@ -19,23 +18,13 @@ from bork.constants import (
     SINE_FREQUENCY,
 )
 
-# Crescent body points (reversed-C, arms sweep back/left)
-_CRESCENT_POINTS = (
-    (-2, -8), (-14, -12), (-22, -18), (-28, -28), (-32, -30),
-    (-26, -28), (-24, -22), (-18, -16), (-8, -12), (6, -10),
-    (14, -5), (14, 5), (6, 10), (-8, 12), (-18, 16),
-    (-24, 22), (-26, 28), (-32, 30), (-28, 28), (-22, 18),
-    (-14, 12), (-2, 8),
-)
+# Bat wing shape points
+_TOP_WING = ((-6, -4), (-20, -20), (14, -16), (10, -4))
+_BOT_WING = ((-6, 4), (-20, 20), (14, 16), (10, 4))
+_FUSELAGE = ((-10, -4), (12, -4), (14, 0), (12, 4), (-10, 4), (-12, 0))
 
-# Top armor plate points
-_TOP_PLATE_POINTS = ((-16, -13), (-22, -18), (-26, -24), (-24, -20), (-18, -15))
-
-# Bottom armor plate points (mirror of top)
-_BOT_PLATE_POINTS = ((-16, 13), (-22, 18), (-26, 24), (-24, 20), (-18, 15))
-
-# Center hull plate points
-_HULL_POINTS = ((0, -6), (10, -4), (12, 0), (10, 4), (0, 6), (-4, 0))
+# Wing accent line endpoints (start, end)
+_ACCENT_LINES = (((-8, -6), (-16, -16)), ((-8, 6), (-16, 16)))
 
 
 def _rotate_points(
@@ -82,38 +71,37 @@ class Enemy:
         return self.x < -ENEMY_SIZE
 
     def draw(self) -> None:
-        """Draw the enemy as a crescent raider with wobble."""
+        """Draw the enemy as a bat wing fighter with wobble."""
         cx, cy = self.x, self.y
         a = self.wobble_angle
-
-        # Main crescent body
-        body = _rotate_points(_CRESCENT_POINTS, cx, cy, a)
-        arcade.draw_polygon_filled(body, ENEMY_BODY_COLOR)
-        arcade.draw_polygon_outline(body, ENEMY_STROKE_COLOR)
-
-        # Top armor plate
-        top_plate = _rotate_points(_TOP_PLATE_POINTS, cx, cy, a)
-        arcade.draw_polygon_filled(top_plate, ENEMY_PLATE_COLOR)
-        arcade.draw_polygon_outline(top_plate, ENEMY_STROKE_COLOR)
-
-        # Bottom armor plate
-        bot_plate = _rotate_points(_BOT_PLATE_POINTS, cx, cy, a)
-        arcade.draw_polygon_filled(bot_plate, ENEMY_PLATE_COLOR)
-        arcade.draw_polygon_outline(bot_plate, ENEMY_STROKE_COLOR)
-
-        # Center hull plate
-        hull = _rotate_points(_HULL_POINTS, cx, cy, a)
-        arcade.draw_polygon_filled(hull, ENEMY_HULL_COLOR)
-        arcade.draw_polygon_outline(hull, (*ENEMY_STROKE_COLOR[:3], 102))
-
-        # Arm tip glows
         cos_a = math.cos(a)
         sin_a = math.sin(a)
-        for ox, oy in ((-29, -27), (-29, 27)):
-            gx = cx + ox * cos_a - oy * sin_a
-            gy = cy + ox * sin_a + oy * cos_a
-            arcade.draw_circle_filled(gx, gy, 1.5, (*ENEMY_STROKE_COLOR[:3], 127))
 
-        # Scanner eye (two layered ellipses at center-right)
-        arcade.draw_ellipse_filled(cx, cy, 10, 6, (*ENEMY_EYE_COLOR[:3], 153))
-        arcade.draw_ellipse_filled(cx, cy, 6, 3, (*ENEMY_EYE_BRIGHT[:3], 229))
+        # Top wing
+        top = _rotate_points(_TOP_WING, cx, cy, a)
+        arcade.draw_polygon_filled(top, ENEMY_BODY_COLOR)
+        arcade.draw_polygon_outline(top, ENEMY_STROKE_COLOR)
+
+        # Bottom wing
+        bot = _rotate_points(_BOT_WING, cx, cy, a)
+        arcade.draw_polygon_filled(bot, ENEMY_BODY_COLOR)
+        arcade.draw_polygon_outline(bot, ENEMY_STROKE_COLOR)
+
+        # Center fuselage
+        fuse = _rotate_points(_FUSELAGE, cx, cy, a)
+        arcade.draw_polygon_filled(fuse, ENEMY_PLATE_COLOR)
+        arcade.draw_polygon_outline(fuse, ENEMY_STROKE_COLOR)
+
+        # Wing accent lines
+        for (sx, sy), (ex, ey) in _ACCENT_LINES:
+            x1 = cx + sx * cos_a - sy * sin_a
+            y1 = cy + sx * sin_a + sy * cos_a
+            x2 = cx + ex * cos_a - ey * sin_a
+            y2 = cy + ex * sin_a + ey * cos_a
+            arcade.draw_line(x1, y1, x2, y2, (255, 85, 85, 127))
+
+        # Scanner eye
+        ex = cx + 2 * cos_a
+        ey = cy + 2 * sin_a
+        arcade.draw_ellipse_filled(ex, ey, 6, 4, (*ENEMY_EYE_COLOR[:3], 178))
+        arcade.draw_ellipse_filled(ex, ey, 3, 2, ENEMY_EYE_BRIGHT)
