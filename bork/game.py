@@ -176,6 +176,8 @@ class BorkGame(arcade.Window):
             self.wave_spawner.boss_triggered = False
             self.state = STATE_BOSS_WARNING
             self.boss_warning_timer = WARNING_DURATION
+            self.powerups.clear()
+            self.powerup_spawn_timer = 0.0
             self.screen_flash = ScreenFlash(
                 WARNING_FLASH_COLOR[:3], 0.1, WARNING_DURATION
             )
