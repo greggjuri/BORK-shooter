@@ -6,28 +6,23 @@ import random
 from bork.constants import (
     BOSS_EXPLOSION_LIFETIME,
     BOSS_EXPLOSION_PARTICLE_COUNT,
-    BOSS_EXPLOSION_SIZE,
     BOSS_EXPLOSION_SPEED,
     BOSS_SUB_EXPLOSION_COUNT,
     BOSS_SUB_EXPLOSION_LIFETIME,
-    BOSS_SUB_EXPLOSION_SIZE,
     BOSS_SUB_EXPLOSION_SPEED,
     COLOR_PLAYER,
     ENEMY_COLOR,
     ENEMY_EXPLOSION_COLOR_END,
     ENEMY_EXPLOSION_COUNT,
     ENEMY_EXPLOSION_LIFETIME,
-    ENEMY_EXPLOSION_SIZE,
     ENEMY_EXPLOSION_SPEED,
     PLAYER_EXPLOSION_COLOR_END,
     PLAYER_EXPLOSION_COUNT,
     PLAYER_EXPLOSION_LIFETIME,
-    PLAYER_EXPLOSION_SIZE,
     PLAYER_EXPLOSION_SPEED,
     POWERUP_BURST_COLOR_END,
     POWERUP_BURST_COUNT,
     POWERUP_BURST_LIFETIME,
-    POWERUP_BURST_SIZE,
     POWERUP_BURST_SPEED,
     SENTINEL_BODY_COLOR,
     SENTINEL_HULL_COLOR,
@@ -35,6 +30,16 @@ from bork.constants import (
     SENTINEL_PLATE_COLOR,
 )
 from bork.particles import Particle
+
+
+def _pick_size(small: tuple, medium: tuple, large: tuple) -> float:
+    """Pick a particle size from three tiers: 60% small, 30% medium, 10% large."""
+    r = random.random()
+    if r < 0.6:
+        return random.uniform(*small)
+    elif r < 0.9:
+        return random.uniform(*medium)
+    return random.uniform(*large)
 
 
 def create_enemy_explosion(x: float, y: float) -> list[Particle]:
@@ -47,20 +52,12 @@ def create_enemy_explosion(x: float, y: float) -> list[Particle]:
         vx = math.cos(angle) * speed
         vy = math.sin(angle) * speed
         lifetime = random.uniform(*ENEMY_EXPLOSION_LIFETIME)
-        size_start = random.uniform(*ENEMY_EXPLOSION_SIZE)
-        shape = random.choice(["square", "triangle"])
+        size_start = _pick_size((1, 2), (3, 5), (6, 8))
         particles.append(
             Particle(
-                x,
-                y,
-                vx,
-                vy,
-                ENEMY_COLOR,
-                ENEMY_EXPLOSION_COLOR_END,
-                size_start,
-                1.0,
-                lifetime,
-                shape,
+                x, y, vx, vy,
+                ENEMY_COLOR, ENEMY_EXPLOSION_COLOR_END,
+                size_start, 0.0, lifetime, "circle",
             )
         )
     return particles
@@ -76,19 +73,12 @@ def create_player_explosion(x: float, y: float) -> list[Particle]:
         vx = math.cos(angle) * speed
         vy = math.sin(angle) * speed
         lifetime = random.uniform(*PLAYER_EXPLOSION_LIFETIME)
-        size_start = random.uniform(*PLAYER_EXPLOSION_SIZE)
+        size_start = _pick_size((1, 3), (4, 7), (8, 12))
         particles.append(
             Particle(
-                x,
-                y,
-                vx,
-                vy,
-                COLOR_PLAYER,
-                PLAYER_EXPLOSION_COLOR_END,
-                size_start,
-                0.0,
-                lifetime,
-                "triangle",
+                x, y, vx, vy,
+                COLOR_PLAYER, PLAYER_EXPLOSION_COLOR_END,
+                size_start, 0.0, lifetime, "circle",
             )
         )
     return particles
@@ -106,19 +96,12 @@ def create_powerup_burst(
         vx = math.cos(angle) * speed
         vy = math.sin(angle) * speed
         lifetime = random.uniform(*POWERUP_BURST_LIFETIME)
-        size_start = random.uniform(*POWERUP_BURST_SIZE)
+        size_start = _pick_size((1, 2), (2, 4), (4, 6))
         particles.append(
             Particle(
-                x,
-                y,
-                vx,
-                vy,
-                color,
-                POWERUP_BURST_COLOR_END,
-                size_start,
-                size_start * 0.5,
-                lifetime,
-                "circle",
+                x, y, vx, vy,
+                color, POWERUP_BURST_COLOR_END,
+                size_start, size_start * 0.3, lifetime, "circle",
             )
         )
     return particles
@@ -156,19 +139,17 @@ def create_boss_explosion(x: float, y: float) -> list[Particle]:
         vx = math.cos(angle) * speed
         vy = math.sin(angle) * speed
         lifetime = random.uniform(*BOSS_EXPLOSION_LIFETIME)
-        size_start = random.uniform(*BOSS_EXPLOSION_SIZE)
-        # Mix fire and debris particles roughly 60/40
+        size_start = _pick_size((1, 3), (4, 8), (9, 14))
         if random.random() < 0.6:
             color_start = random.choice(_BOSS_FIRE_COLORS)
         else:
             color_start = random.choice(_BOSS_DEBRIS_COLORS)
         fade_to = random.choice(_BOSS_FADE_TARGETS)
-        shape = random.choice(["square", "triangle", "circle"])
         particles.append(
             Particle(
                 x, y, vx, vy,
                 color_start, fade_to,
-                size_start, 0.0, lifetime, shape,
+                size_start, 0.0, lifetime, "circle",
             )
         )
     return particles
@@ -184,7 +165,7 @@ def create_boss_small_explosion(x: float, y: float) -> list[Particle]:
         vx = math.cos(angle) * speed
         vy = math.sin(angle) * speed
         lifetime = random.uniform(*BOSS_SUB_EXPLOSION_LIFETIME)
-        size_start = random.uniform(*BOSS_SUB_EXPLOSION_SIZE)
+        size_start = _pick_size((1, 2), (3, 6), (7, 10))
         if random.random() < 0.5:
             color_start = random.choice(_BOSS_FIRE_COLORS)
         else:
@@ -194,8 +175,7 @@ def create_boss_small_explosion(x: float, y: float) -> list[Particle]:
             Particle(
                 x, y, vx, vy,
                 color_start, fade_to,
-                size_start, 0.0, lifetime,
-                random.choice(["square", "triangle", "circle"]),
+                size_start, 0.0, lifetime, "circle",
             )
         )
     return particles

@@ -66,27 +66,18 @@ class Particle:
         self.age += dt
 
     def draw(self) -> None:
-        """Draw the particle as its configured shape."""
+        """Draw the particle as a circle with optional glow for larger sizes."""
         s = self.size
         if s <= 0:
             return
         c = self.color
-        if self.shape == "circle":
-            arcade.draw_circle_filled(self.x, self.y, s, c)
-        elif self.shape == "square":
-            arcade.draw_lrbt_rectangle_filled(
-                self.x - s, self.x + s, self.y - s, self.y + s, c
+        # Glow layer for larger particles (radius > 4)
+        if s > 4 and c[3] > 10:
+            glow_alpha = max(1, c[3] // 4)
+            arcade.draw_circle_filled(
+                self.x, self.y, s * 1.6, (c[0], c[1], c[2], glow_alpha)
             )
-        elif self.shape == "triangle":
-            arcade.draw_triangle_filled(
-                self.x,
-                self.y + s,
-                self.x - s,
-                self.y - s,
-                self.x + s,
-                self.y - s,
-                c,
-            )
+        arcade.draw_circle_filled(self.x, self.y, s, c)
 
 
 class ParticleSystem:

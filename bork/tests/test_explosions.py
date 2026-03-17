@@ -27,7 +27,7 @@ def test_enemy_explosion_position() -> None:
 def test_enemy_explosion_shapes() -> None:
     particles = create_enemy_explosion(100, 200)
     for p in particles:
-        assert p.shape in ("square", "triangle")
+        assert p.shape == "circle"
 
 
 def test_player_explosion_count_in_range() -> None:
@@ -35,10 +35,10 @@ def test_player_explosion_count_in_range() -> None:
     assert PLAYER_EXPLOSION_COUNT[0] <= len(particles) <= PLAYER_EXPLOSION_COUNT[1]
 
 
-def test_player_explosion_all_triangles() -> None:
+def test_player_explosion_all_circles() -> None:
     particles = create_player_explosion(100, 200)
     for p in particles:
-        assert p.shape == "triangle"
+        assert p.shape == "circle"
 
 
 def test_powerup_burst_count_in_range() -> None:

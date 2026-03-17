@@ -336,12 +336,8 @@ class BorkGame(arcade.Window):
         for p in self.powerups:
             p.draw()
 
-        # Draw boss (behind player, in front of enemies)
-        if self.boss and self.state in (
-            STATE_BOSS_FIGHT,
-            STATE_BOSS_DYING,
-            STATE_VICTORY,
-        ):
+        # Draw boss (behind player, in front of enemies); hide after final explosion
+        if self.boss and self.state in (STATE_BOSS_FIGHT, STATE_BOSS_DYING):
             self.boss.draw()
 
         if self.state in (STATE_PLAYING, STATE_BOSS_WARNING, STATE_BOSS_FIGHT):
