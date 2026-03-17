@@ -7,7 +7,7 @@ TARGET_FPS = 60
 # Player
 PLAYER_ACCELERATION = 600.0  # pixels/sec^2
 PLAYER_FRICTION = 0.88  # velocity multiplier per frame (at 60fps)
-PLAYER_MAX_SPEED = 350.0  # pixels/sec
+PLAYER_MAX_SPEED = 200.0  # pixels/sec
 PLAYER_SHIP_SIZE = 20  # half-width of the ship triangle
 PLAYER_START_X = 100
 PLAYER_START_Y = SCREEN_HEIGHT // 2
@@ -70,7 +70,7 @@ POWERUP_SPAWN_DELAY = 1.0  # seconds after wave 3 completes
 POWERUP_SPAWN_Y = 0.70  # 30% from top = 70% up
 
 # Powerup tier levels
-SPEED_LEVELS = (350.0, 550.0, 750.0)  # max speed per tier (level 1/2/3)
+SPEED_LEVELS = (200.0, 300.0, 420.0)  # max speed per tier (level 1/2/3)
 FIRE_RATE_LEVELS = (0.36, 0.24, 0.14)  # shoot cooldown per tier (lower = faster)
 POWERUP_LABEL_COLOR = (255, 255, 255, 220)  # white letter on glassy button
 POWERUP_BURST_COLOR = (0, 200, 180)  # teal burst on collection
