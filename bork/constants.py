@@ -70,7 +70,7 @@ POWERUP_SPAWN_DELAY = 1.0  # seconds after wave 3 completes
 POWERUP_SPAWN_Y = 0.70  # 30% from top = 70% up
 
 # Powerup tier levels
-SPEED_LEVELS = (350.0, 470.0, 590.0)  # max speed per tier (level 1/2/3)
+SPEED_LEVELS = (350.0, 550.0, 750.0)  # max speed per tier (level 1/2/3)
 FIRE_RATE_LEVELS = (0.36, 0.24, 0.14)  # shoot cooldown per tier (lower = faster)
 POWERUP_LABEL_COLOR = (255, 255, 255, 220)  # white letter on glassy button
 POWERUP_BURST_COLOR = (0, 200, 180)  # teal burst on collection

@@ -170,7 +170,7 @@ class HUD:
             "SPD", x, y, HUD_PRIMARY,
             font_size=HUD_TIER_FONT_SIZE, anchor_x="left", anchor_y="center",
         )
-        pip_x = x + 35
+        pip_x = x + 55
         for i in range(3):
             color = HUD_TIER_ACTIVE_COLOR if i < speed_level else HUD_TIER_INACTIVE_COLOR
             arcade.draw_lrbt_rectangle_filled(
@@ -179,12 +179,12 @@ class HUD:
             pip_x += s * 3
 
         # ROF indicator — offset right of SPD
-        x = HUD_MARGIN + 110
+        x = HUD_MARGIN + 130
         arcade.draw_text(
             "ROF", x, y, HUD_PRIMARY,
             font_size=HUD_TIER_FONT_SIZE, anchor_x="left", anchor_y="center",
         )
-        pip_x = x + 35
+        pip_x = x + 55
         for i in range(3):
             color = HUD_TIER_ACTIVE_COLOR if i < fire_rate_level else HUD_TIER_INACTIVE_COLOR
             arcade.draw_lrbt_rectangle_filled(
