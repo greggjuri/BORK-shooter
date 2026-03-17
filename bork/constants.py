@@ -164,11 +164,20 @@ SHIP_ACCENT_COLOR = (0, 34, 51)  # #002233 — engine block
 SHIP_COCKPIT_COLOR = (0, 51, 68)  # #003344 — cockpit accent
 SHIP_OUTLINE_COLOR = (0, 220, 255)  # bright cyan stroke
 
-# Engine exhaust glow (inner to outer)
-EXHAUST_COLOR_INNER = (180, 30, 10)  # dark red, closest to engine
-EXHAUST_COLOR_MID = (220, 50, 20)  # red, middle layer
-EXHAUST_COLOR_OUTER = (255, 100, 30)  # orange-red, outer layer
-EXHAUST_COLOR_FAR = (255, 160, 50)  # light orange, furthest
+# Engine exhaust glow layers (offset_x, width, height, r, g, b, alpha)
+# Sorted outermost first so inner layers draw on top.
+EXHAUST_LAYERS = (
+    (-55, 56, 26, 255, 160, 50, 5),
+    (-52, 50, 24, 255, 145, 45, 10),
+    (-49, 44, 22, 255, 130, 40, 18),
+    (-46, 39, 20, 250, 115, 35, 28),
+    (-43, 34, 18, 245, 95, 30, 40),
+    (-40, 29, 16, 235, 75, 25, 55),
+    (-38, 24, 14, 220, 60, 20, 70),
+    (-36, 20, 12, 205, 45, 15, 85),
+    (-34, 16, 10, 190, 35, 12, 95),
+    (-33, 12, 8, 180, 30, 10, 102),
+)
 
 # === Boss System ===
 
