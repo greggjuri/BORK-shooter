@@ -121,22 +121,36 @@ def update_boss_fight(game: BorkGame, dt: float) -> None:
 
 
 def update_boss_dying(game: BorkGame, dt: float) -> None:
-    """Handle boss death animation."""
+    """Handle boss death animation — staggered multi-burst destruction."""
     game.boss.death_timer -= dt
     game.boss_death_explosion_timer -= dt
 
+    # Escalating shake throughout the death sequence
+    elapsed = BOSS_DEATH_DURATION - game.boss.death_timer
+    shake_ramp = min(1.0, elapsed / BOSS_DEATH_DURATION)
+    game.screen_shake = ScreenShake(
+        BOSS_DEATH_FINAL_SHAKE_INTENSITY * 0.3 * (1.0 + shake_ramp), 0.15
+    )
+
     if game.boss_death_explosion_timer <= 0:
         game.boss_death_explosion_timer = BOSS_DEATH_SMALL_EXPLOSION_INTERVAL
-        rx = game.boss.x + random.uniform(-60, 60)
-        ry = game.boss.y + random.uniform(-40, 40)
+        # Spawn sub-explosions across the full hull area
+        rx = game.boss.x + random.uniform(-90, 90)
+        ry = game.boss.y + random.uniform(-70, 70)
         game.particle_system.add(create_boss_small_explosion(rx, ry))
 
     if game.boss.death_timer <= 0:
-        game.particle_system.add(create_boss_explosion(game.boss.x, game.boss.y))
+        # Final detonation: multiple offset bursts for a wall of fire
+        bx, by = game.boss.x, game.boss.y
+        game.particle_system.add(create_boss_explosion(bx, by))
+        for _ in range(4):
+            ox = random.uniform(-60, 60)
+            oy = random.uniform(-50, 50)
+            game.particle_system.add(create_boss_explosion(bx + ox, by + oy))
         game.screen_shake = ScreenShake(
             BOSS_DEATH_FINAL_SHAKE_INTENSITY, BOSS_DEATH_FINAL_SHAKE_DURATION
         )
-        game.screen_flash = ScreenFlash((255, 255, 255), 0.15, 0.4)
+        game.screen_flash = ScreenFlash((255, 255, 255), 0.25, 0.6)
         game.state = STATE_VICTORY
         game.victory_timer = VICTORY_DISPLAY_DURATION
         _award_boss_victory_points(game)

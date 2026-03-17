@@ -8,6 +8,10 @@ from bork.constants import (
     BOSS_EXPLOSION_PARTICLE_COUNT,
     BOSS_EXPLOSION_SIZE,
     BOSS_EXPLOSION_SPEED,
+    BOSS_SUB_EXPLOSION_COUNT,
+    BOSS_SUB_EXPLOSION_LIFETIME,
+    BOSS_SUB_EXPLOSION_SIZE,
+    BOSS_SUB_EXPLOSION_SPEED,
     COLOR_PLAYER,
     ENEMY_COLOR,
     ENEMY_EXPLOSION_COLOR_END,
@@ -26,7 +30,9 @@ from bork.constants import (
     POWERUP_BURST_SIZE,
     POWERUP_BURST_SPEED,
     SENTINEL_BODY_COLOR,
-    SENTINEL_CORE_COLOR,
+    SENTINEL_HULL_COLOR,
+    SENTINEL_HULL_STROKE,
+    SENTINEL_PLATE_COLOR,
 )
 from bork.particles import Particle
 
@@ -118,17 +124,30 @@ def create_powerup_burst(
     return particles
 
 
-# Boss explosion color palette
-_BOSS_COLORS = [
+# Boss explosion color palette — fire + hull debris
+_BOSS_FIRE_COLORS = [
     (0, 200, 220),  # cyan
     (255, 150, 0),  # orange
     (255, 220, 80),  # yellow
-    (255, 255, 255),  # white
+    (255, 255, 255),  # white hot
+    (255, 100, 20),  # deep orange
+    (255, 60, 40),  # core red
+]
+_BOSS_DEBRIS_COLORS = [
+    SENTINEL_HULL_COLOR,  # dark hull gray-blue
+    SENTINEL_PLATE_COLOR,  # inner plate dark
+    SENTINEL_HULL_STROKE[:3],  # light hull gray
+    SENTINEL_BODY_COLOR,  # body gray
+]
+_BOSS_FADE_TARGETS = [
+    (255, 200, 50),  # golden
+    (255, 100, 0),  # deep orange
+    (80, 80, 120),  # cold hull ash
 ]
 
 
 def create_boss_explosion(x: float, y: float) -> list[Particle]:
-    """Create a large dramatic burst for boss death."""
+    """Create a massive multi-layered detonation for boss death finale."""
     count = random.randint(*BOSS_EXPLOSION_PARTICLE_COUNT)
     particles: list[Particle] = []
     for _ in range(count):
@@ -138,49 +157,45 @@ def create_boss_explosion(x: float, y: float) -> list[Particle]:
         vy = math.sin(angle) * speed
         lifetime = random.uniform(*BOSS_EXPLOSION_LIFETIME)
         size_start = random.uniform(*BOSS_EXPLOSION_SIZE)
-        color_start = random.choice(_BOSS_COLORS)
+        # Mix fire and debris particles roughly 60/40
+        if random.random() < 0.6:
+            color_start = random.choice(_BOSS_FIRE_COLORS)
+        else:
+            color_start = random.choice(_BOSS_DEBRIS_COLORS)
+        fade_to = random.choice(_BOSS_FADE_TARGETS)
         shape = random.choice(["square", "triangle", "circle"])
         particles.append(
             Particle(
-                x,
-                y,
-                vx,
-                vy,
-                color_start,
-                (255, 200, 50),
-                size_start,
-                0.0,
-                lifetime,
-                shape,
+                x, y, vx, vy,
+                color_start, fade_to,
+                size_start, 0.0, lifetime, shape,
             )
         )
     return particles
 
 
 def create_boss_small_explosion(x: float, y: float) -> list[Particle]:
-    """Create a small pop for the boss dying sequence."""
-    count = random.randint(8, 15)
+    """Create a hefty sub-explosion for the staggered death sequence."""
+    count = random.randint(*BOSS_SUB_EXPLOSION_COUNT)
     particles: list[Particle] = []
     for _ in range(count):
         angle = random.uniform(0, 2 * math.pi)
-        speed = random.uniform(80, 200)
+        speed = random.uniform(*BOSS_SUB_EXPLOSION_SPEED)
         vx = math.cos(angle) * speed
         vy = math.sin(angle) * speed
-        lifetime = random.uniform(0.2, 0.5)
-        size_start = random.uniform(3, 7)
-        color_start = random.choice([SENTINEL_CORE_COLOR, SENTINEL_BODY_COLOR])
+        lifetime = random.uniform(*BOSS_SUB_EXPLOSION_LIFETIME)
+        size_start = random.uniform(*BOSS_SUB_EXPLOSION_SIZE)
+        if random.random() < 0.5:
+            color_start = random.choice(_BOSS_FIRE_COLORS)
+        else:
+            color_start = random.choice(_BOSS_DEBRIS_COLORS)
+        fade_to = random.choice(_BOSS_FADE_TARGETS)
         particles.append(
             Particle(
-                x,
-                y,
-                vx,
-                vy,
-                color_start,
-                (255, 150, 0),
-                size_start,
-                0.0,
-                lifetime,
-                random.choice(["square", "triangle"]),
+                x, y, vx, vy,
+                color_start, fade_to,
+                size_start, 0.0, lifetime,
+                random.choice(["square", "triangle", "circle"]),
             )
         )
     return particles
