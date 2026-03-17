@@ -10,6 +10,9 @@ B.O.R.K. is a horizontal scrolling shoot 'em up built with Python and the Arcade
 - Chunky explosions and impactful feedback
 - Boss fights that test everything you've learned
 
+**Design principles:**
+- "Too much is not enough" — visual effects (especially explosions, boss deaths, screen shake) should feel excessive. If it seems like too much, it's probably about right.
+
 ## Tech Stack
 
 - **Language**: Python 3.8+
