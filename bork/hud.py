@@ -64,6 +64,7 @@ class HUD:
         lives: int,
         speed_level: int,
         fire_rate_level: int,
+        zone: int = 1,
     ) -> None:
         """Draw the full HUD overlay."""
         self._draw_score(score)
@@ -71,7 +72,7 @@ class HUD:
         self._draw_combo(combo)
         self._draw_lives(lives)
         self._draw_tier_indicators(speed_level, fire_rate_level)
-        self._draw_zone()
+        self._draw_zone(zone)
         self._draw_milestone()
 
     def _draw_score(self, score: int) -> None:
@@ -192,10 +193,10 @@ class HUD:
             )
             pip_x += s * 3
 
-    def _draw_zone(self) -> None:
-        """Draw zone indicator (static for now)."""
+    def _draw_zone(self, zone: int) -> None:
+        """Draw zone indicator."""
         arcade.draw_text(
-            "\u25c4 ZONE 01 \u25ba",
+            f"\u25c4 ZONE {zone:02d} \u25ba",
             SCREEN_WIDTH - HUD_MARGIN,
             SCREEN_HEIGHT - HUD_MARGIN,
             HUD_DIM,
@@ -352,3 +353,56 @@ class HUD:
                 anchor_x="center",
                 anchor_y="center",
             )
+
+    def draw_zone_transition_text(self, zone_name: str) -> None:
+        """Draw zone complete overlay during transition."""
+        arcade.draw_text(
+            f"{zone_name} COMPLETE",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + 20,
+            HUD_ACCENT,
+            font_size=32,
+            bold=True,
+            anchor_x="center",
+            anchor_y="center",
+        )
+        arcade.draw_text(
+            "Entering next zone...",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 20,
+            HUD_PRIMARY,
+            font_size=16,
+            anchor_x="center",
+            anchor_y="center",
+        )
+
+    def draw_game_complete_text(self, score: int) -> None:
+        """Draw final game complete overlay."""
+        arcade.draw_text(
+            "GAME COMPLETE",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + 40,
+            HUD_ACCENT,
+            font_size=36,
+            bold=True,
+            anchor_x="center",
+            anchor_y="center",
+        )
+        arcade.draw_text(
+            f"Final Score: {score:,}",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2,
+            HUD_PRIMARY,
+            font_size=20,
+            anchor_x="center",
+            anchor_y="center",
+        )
+        arcade.draw_text(
+            "Press R to restart",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 35,
+            HUD_DIM,
+            font_size=16,
+            anchor_x="center",
+            anchor_y="center",
+        )

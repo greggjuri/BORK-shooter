@@ -1,32 +1,26 @@
 """Wave spawner that manages timed enemy waves."""
 
 from bork.constants import (
-    BOSS_SPAWN_AFTER_WAVES,
-    ENEMIES_PER_WAVE,
     ENEMY_SIZE,
     ENEMY_SPAWN_SPACING,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
-    WAVE_BOTTOM_Y,
-    WAVE_CENTER_Y,
     WAVE_PAUSE,
     WAVE_START_DELAY,
-    WAVE_TOP_Y,
 )
 from bork.enemy import Enemy
 
-# Wave definitions: (y_fraction, pattern)
-WAVE_DEFS: list[tuple[float, str]] = [
-    (WAVE_TOP_Y, "straight"),
-    (WAVE_BOTTOM_Y, "straight"),
-    (WAVE_CENTER_Y, "sine"),
-]
-
 
 class WaveSpawner:
-    """Manages wave timing and enemy spawning."""
+    """Manages wave timing and enemy spawning from zone config."""
 
-    def __init__(self) -> None:
+    def __init__(self, zone_config: dict) -> None:
+        self._wave_defs = zone_config["wave_patterns"]
+        self._boss_after = zone_config["waves_before_boss"]
+        self._enemies_per_wave = zone_config["enemies_per_wave"]
+        self._enemy_speed = zone_config["enemy_speed"]
+        self._powerup_after_wave = zone_config["powerup_after_wave"]
+
         self.wave_index = 0
         self.timer = WAVE_START_DELAY
         self.spawned_in_wave = 0
@@ -51,18 +45,18 @@ class WaveSpawner:
             enemy = self._spawn_enemy()
             self.spawned_in_wave += 1
 
-            if self.spawned_in_wave >= ENEMIES_PER_WAVE:
-                # Signal powerup spawn after wave 3 (index 2)
-                if self.wave_index == 2:
+            if self.spawned_in_wave >= self._enemies_per_wave:
+                # Signal powerup spawn after the configured wave
+                if self.wave_index == self._powerup_after_wave:
                     self.powerup_spawn_due = True
                 # Wave complete — pause before next
                 self.wave_active = False
                 self.spawned_in_wave = 0
-                self.wave_index = (self.wave_index + 1) % len(WAVE_DEFS)
+                self.wave_index = (self.wave_index + 1) % len(self._wave_defs)
                 self.timer = WAVE_PAUSE
                 self.total_waves_completed += 1
                 if (
-                    self.total_waves_completed >= BOSS_SPAWN_AFTER_WAVES
+                    self.total_waves_completed >= self._boss_after
                     and not self.boss_triggered
                 ):
                     self.boss_triggered = True
@@ -75,12 +69,12 @@ class WaveSpawner:
 
     def _spawn_enemy(self) -> Enemy:
         """Create an enemy based on current wave definition."""
-        y_frac, pattern = WAVE_DEFS[self.wave_index]
+        y_frac, pattern = self._wave_defs[self.wave_index]
         y = SCREEN_HEIGHT * y_frac
-        return Enemy(SCREEN_WIDTH + ENEMY_SIZE, y, pattern, y)
+        return Enemy(SCREEN_WIDTH + ENEMY_SIZE, y, pattern, y, self._enemy_speed)
 
     def reset(self) -> None:
-        """Reset to initial state for game restart."""
+        """Reset to initial state for zone/game restart."""
         self.wave_index = 0
         self.timer = WAVE_START_DELAY
         self.spawned_in_wave = 0

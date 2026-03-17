@@ -28,15 +28,15 @@ from bork.constants import (
     SENTINEL_BEAM_HIT_HEIGHT,
     SENTINEL_BODY_DAMAGE,
     SENTINEL_CORE_DAMAGE,
-    SENTINEL_CORE_POINTS,
-    SENTINEL_NODAMAGE_BONUS,
     SENTINEL_OPENING_HEIGHT,
     SENTINEL_WIDTH,
     STATE_BOSS_DYING,
     STATE_BOSS_FIGHT,
     STATE_GAME_OVER,
     STATE_VICTORY,
+    STATE_ZONE_TRANSITION,
     VICTORY_DISPLAY_DURATION,
+    ZONE_TRANSITION_DURATION,
 )
 from bork.explosions import (
     create_boss_explosion,
@@ -157,19 +157,38 @@ def update_boss_dying(game: BorkGame, dt: float) -> None:
 
 
 def update_victory(game: BorkGame, dt: float) -> None:
-    """Handle victory display countdown."""
+    """Handle victory display countdown, then trigger zone transition or game complete."""
     game.victory_timer -= dt
+    if game.victory_timer <= 0:
+        if game.zone_manager.is_final_zone:
+            # Stay in victory state — game complete, wait for R to restart
+            pass
+        else:
+            game.state = STATE_ZONE_TRANSITION
+            game.zone_transition_timer = ZONE_TRANSITION_DURATION
+
+
+def update_zone_transition(game: BorkGame, dt: float) -> None:
+    """Handle zone transition countdown, then advance to next zone."""
+    game.zone_transition_timer -= dt
+    if game.zone_transition_timer <= 0:
+        game.zone_manager.advance()
+        game._start_zone()
 
 
 def _award_boss_victory_points(game: BorkGame) -> None:
-    """Award points for boss defeat."""
-    game.scoring.register_kill(SENTINEL_CORE_POINTS)
-    game.score_popups.spawn(game.boss.x, game.boss.y, SENTINEL_CORE_POINTS)
+    """Award points for boss defeat using zone config values."""
+    config = game.zone_manager.config
+    boss_points = config["boss_points"]
+    nodamage_bonus = config["boss_nodamage_bonus"]
+
+    game.scoring.register_kill(boss_points)
+    game.score_popups.spawn(game.boss.x, game.boss.y, boss_points)
 
     game.victory_bonus_pts = 0
     if not game.player_hit_during_boss:
-        game.victory_bonus_pts = SENTINEL_NODAMAGE_BONUS
-        game.scoring.score += SENTINEL_NODAMAGE_BONUS
+        game.victory_bonus_pts = nodamage_bonus
+        game.scoring.score += nodamage_bonus
     game.victory_points_awarded = True
 
 

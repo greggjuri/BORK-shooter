@@ -174,6 +174,7 @@ STATE_BOSS_WARNING = "boss_warning"
 STATE_BOSS_FIGHT = "boss_fight"
 STATE_BOSS_DYING = "boss_dying"
 STATE_VICTORY = "victory"
+STATE_ZONE_TRANSITION = "zone_transition"
 
 # Colors
 COLOR_BACKGROUND = (5, 5, 15)
@@ -313,3 +314,56 @@ WARNING_TEXT_COLOR = (255, 60, 40)
 
 # Victory
 VICTORY_DISPLAY_DURATION = 3.0
+ZONE_TRANSITION_DURATION = 3.0  # seconds to show "ZONE X COMPLETE"
+
+# === Zone System ===
+
+ZONE_COUNT = 3
+
+ZONE_CONFIGS = {
+    1: {
+        "name": "DEEP SPACE",
+        "waves_before_boss": 9,
+        "wave_patterns": (
+            (WAVE_TOP_Y, "straight"),
+            (WAVE_BOTTOM_Y, "straight"),
+            (WAVE_CENTER_Y, "sine"),
+        ),
+        "enemies_per_wave": ENEMIES_PER_WAVE,
+        "enemy_speed": ENEMY_SPEED,
+        "boss_type": "sentinel",
+        "boss_points": SENTINEL_CORE_POINTS,
+        "boss_nodamage_bonus": SENTINEL_NODAMAGE_BONUS,
+        "powerup_after_wave": 2,
+    },
+    2: {
+        "name": "NEBULA",
+        "waves_before_boss": 12,
+        "wave_patterns": (
+            (WAVE_TOP_Y, "straight"),
+            (WAVE_BOTTOM_Y, "straight"),
+            (WAVE_CENTER_Y, "sine"),
+        ),
+        "enemies_per_wave": 6,
+        "enemy_speed": 180.0,
+        "boss_type": "sentinel",
+        "boss_points": 7500,
+        "boss_nodamage_bonus": 3500,
+        "powerup_after_wave": 3,
+    },
+    3: {
+        "name": "ASTEROID BELT",
+        "waves_before_boss": 15,
+        "wave_patterns": (
+            (WAVE_TOP_Y, "straight"),
+            (WAVE_BOTTOM_Y, "straight"),
+            (WAVE_CENTER_Y, "sine"),
+        ),
+        "enemies_per_wave": 7,
+        "enemy_speed": 210.0,
+        "boss_type": "sentinel",
+        "boss_points": 10000,
+        "boss_nodamage_bonus": 5000,
+        "powerup_after_wave": 4,
+    },
+}

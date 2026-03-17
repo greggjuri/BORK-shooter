@@ -44,11 +44,14 @@ def _rotate_points(
 class Enemy:
     """A single enemy that moves leftward with an optional sine pattern."""
 
-    def __init__(self, x: float, y: float, pattern: str, base_y: float) -> None:
+    def __init__(
+        self, x: float, y: float, pattern: str, base_y: float, speed: float = 0.0
+    ) -> None:
         self.x = x
         self.y = y
         self.pattern = pattern  # "straight" or "sine"
         self.base_y = base_y  # center Y for sine oscillation
+        self.speed = speed if speed > 0 else ENEMY_SPEED
         self.time_alive = 0.0
 
     @property
@@ -61,7 +64,7 @@ class Enemy:
 
     def update(self, dt: float) -> None:
         """Move leftward. Apply sine oscillation if pattern is 'sine'."""
-        self.x -= ENEMY_SPEED * dt
+        self.x -= self.speed * dt
         self.time_alive += dt
         if self.pattern == "sine":
             self.y = self.base_y + SINE_AMPLITUDE * math.sin(

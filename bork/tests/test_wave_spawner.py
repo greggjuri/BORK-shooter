@@ -9,8 +9,11 @@ from bork.constants import (
     WAVE_PAUSE,
     WAVE_START_DELAY,
     WAVE_TOP_Y,
+    ZONE_CONFIGS,
 )
 from bork.wave_spawner import WaveSpawner
+
+_Z1 = ZONE_CONFIGS[1]
 
 DT = 1 / 60
 
@@ -27,19 +30,19 @@ def _tick(spawner: WaveSpawner, seconds: float) -> list:
 
 
 def test_no_spawn_during_initial_delay() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     enemies = _tick(s, WAVE_START_DELAY - 0.1)
     assert len(enemies) == 0
 
 
 def test_first_spawn_after_delay() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     enemies = _tick(s, WAVE_START_DELAY + 0.1)
     assert len(enemies) >= 1
 
 
 def test_wave_spawns_correct_count() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     # Skip initial delay + enough time for all 5 enemies
     total_time = WAVE_START_DELAY + ENEMIES_PER_WAVE * ENEMY_SPAWN_SPACING + 0.5
     enemies = _tick(s, total_time)
@@ -47,7 +50,7 @@ def test_wave_spawns_correct_count() -> None:
 
 
 def test_wave_pause_between_waves() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     # Tick until wave 1 is complete (all 5 enemies spawned)
     collected: list = []
     for _ in range(600):  # max 10 seconds
@@ -65,7 +68,7 @@ def test_wave_pause_between_waves() -> None:
 
 
 def test_waves_loop_after_three() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     # Run through all 3 waves + pauses + start of wave 4
     single_wave_time = ENEMIES_PER_WAVE * ENEMY_SPAWN_SPACING + 0.1
     total_time = (
@@ -84,7 +87,7 @@ def test_waves_loop_after_three() -> None:
 
 
 def test_wave_y_positions() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     # Wave 0: top
     _tick(s, WAVE_START_DELAY + 0.01)
     e0 = s._spawn_enemy()
@@ -102,14 +105,14 @@ def test_wave_y_positions() -> None:
 
 
 def test_wave_2_uses_sine_pattern() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     s.wave_index = 2
     e = s._spawn_enemy()
     assert e.pattern == "sine"
 
 
 def test_reset() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     # Advance past initial state
     _tick(s, WAVE_START_DELAY + 1.0)
     s.reset()
@@ -136,20 +139,20 @@ def _complete_waves(spawner: WaveSpawner, count: int) -> None:
 
 
 def test_powerup_spawn_due_after_wave_3() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     assert s.powerup_spawn_due is False
     _complete_waves(s, 3)
     assert s.powerup_spawn_due is True
 
 
 def test_powerup_spawn_due_not_after_wave_1() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     _complete_waves(s, 1)
     assert s.powerup_spawn_due is False
 
 
 def test_powerup_spawn_due_resets() -> None:
-    s = WaveSpawner()
+    s = WaveSpawner(_Z1)
     s.powerup_spawn_due = True
     s.reset()
     assert s.powerup_spawn_due is False

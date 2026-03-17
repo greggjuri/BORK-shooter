@@ -9,6 +9,7 @@ from bork.boss_fight import (
     update_boss_fight,
     update_boss_warning,
     update_victory,
+    update_zone_transition,
 )
 from bork.collision import circle_circle, point_in_circle
 from bork.constants import (
@@ -33,7 +34,6 @@ from bork.constants import (
     SCREEN_TITLE,
     SCREEN_WIDTH,
     SENTINEL_CORE_HP,
-    SENTINEL_CORE_POINTS,
     STARTING_LIVES,
     STATE_BOSS_DYING,
     STATE_BOSS_FIGHT,
@@ -41,6 +41,7 @@ from bork.constants import (
     STATE_GAME_OVER,
     STATE_PLAYING,
     STATE_VICTORY,
+    STATE_ZONE_TRANSITION,
     WARNING_DURATION,
     WARNING_FLASH_COLOR,
 )
@@ -60,6 +61,7 @@ from bork.scoring import ScoringSystem
 from bork.screen_effects import ScreenFlash, ScreenShake
 from bork.starfield import Starfield
 from bork.wave_spawner import WaveSpawner
+from bork.zone_manager import ZoneManager
 
 
 class BorkGame(arcade.Window):
@@ -68,6 +70,7 @@ class BorkGame(arcade.Window):
     def __init__(self) -> None:
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
         arcade.set_background_color(COLOR_BACKGROUND)
+        self.zone_manager: ZoneManager = ZoneManager()
         self.player: Player | None = None
         self.projectiles: list[Projectile] = []
         self.enemies: list[Enemy] = []
@@ -93,24 +96,29 @@ class BorkGame(arcade.Window):
         self.boss_death_explosion_timer: float = 0.0
         self.victory_points_awarded: bool = False
         self.victory_bonus_pts: int = 0
+        self.zone_transition_timer: float = 0.0
 
     def setup(self) -> None:
-        """Initialize game state."""
+        """Initialize full game state (new game or restart)."""
+        self.zone_manager.reset()
         self.player = Player(PLAYER_START_X, PLAYER_START_Y)
-        self.projectiles = []
-        self.enemies = []
         self.starfield = Starfield()
-        self.wave_spawner = WaveSpawner()
-        self.state = STATE_PLAYING
         self.particle_system = ParticleSystem()
         self.screen_flash = None
         self.screen_shake = None
-        self.powerups = []
-        self.powerup_spawn_timer = 0.0
         self.scoring = ScoringSystem()
         self.hud = HUD()
         self.score_popups = ScorePopupManager()
         self.lives = STARTING_LIVES
+        self._start_zone()
+
+    def _start_zone(self) -> None:
+        """Start (or restart) the current zone. Keeps player, score, and lives."""
+        self.wave_spawner = WaveSpawner(self.zone_manager.config)
+        self.projectiles = []
+        self.enemies = []
+        self.powerups = []
+        self.powerup_spawn_timer = 0.0
         self.boss = None
         self.enemy_projectiles = []
         self.boss_warning_timer = 0.0
@@ -119,6 +127,8 @@ class BorkGame(arcade.Window):
         self.boss_death_explosion_timer = 0.0
         self.victory_points_awarded = False
         self.victory_bonus_pts = 0
+        self.zone_transition_timer = 0.0
+        self.state = STATE_PLAYING
 
     def on_update(self, dt: float) -> None:
         """Update all game entities."""
@@ -153,6 +163,9 @@ class BorkGame(arcade.Window):
             return
         if self.state == STATE_VICTORY:
             update_victory(self, dt)
+            return
+        if self.state == STATE_ZONE_TRANSITION:
+            update_zone_transition(self, dt)
             return
         if self.state != STATE_PLAYING:
             return
@@ -369,6 +382,7 @@ class BorkGame(arcade.Window):
             self.lives,
             spd,
             rof,
+            self.zone_manager.current_zone,
         )
 
         # Boss health bar (HUD layer, no shake)
@@ -386,11 +400,19 @@ class BorkGame(arcade.Window):
 
         # Victory overlay
         if self.state == STATE_VICTORY:
-            self.hud.draw_victory_text(
-                "SENTINEL",
-                SENTINEL_CORE_POINTS,
-                self.victory_bonus_pts,
-            )
+            if self.zone_manager.is_final_zone:
+                self.hud.draw_game_complete_text(self.scoring.score)
+            else:
+                config = self.zone_manager.config
+                self.hud.draw_victory_text(
+                    config["name"],
+                    config["boss_points"],
+                    self.victory_bonus_pts,
+                )
+
+        # Zone transition overlay
+        if self.state == STATE_ZONE_TRANSITION:
+            self.hud.draw_zone_transition_text(self.zone_manager.config["name"])
 
         # Game over overlay
         if self.state == STATE_GAME_OVER:
@@ -426,7 +448,9 @@ class BorkGame(arcade.Window):
         """Track key presses."""
         self.keys_pressed.add(key)
 
-        if key == arcade.key.R and self.state in (STATE_GAME_OVER, STATE_VICTORY):
+        if key == arcade.key.R and self.state in (
+            STATE_GAME_OVER, STATE_VICTORY, STATE_ZONE_TRANSITION
+        ):
             self.setup()
 
     def on_key_release(self, key: int, modifiers: int) -> None:

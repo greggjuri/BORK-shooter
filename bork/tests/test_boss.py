@@ -4,7 +4,6 @@ from bork.boss import Sentinel
 from bork.boss_attacks import EnemyProjectile
 from bork.collision import point_in_rect
 from bork.constants import (
-    BOSS_SPAWN_AFTER_WAVES,
     ENEMIES_PER_WAVE,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
@@ -13,8 +12,11 @@ from bork.constants import (
     SENTINEL_CORE_HP,
     SENTINEL_PHASE2_THRESHOLD,
     SENTINEL_PHASE3_THRESHOLD,
+    ZONE_CONFIGS,
 )
 from bork.wave_spawner import WaveSpawner
+
+_Z1 = ZONE_CONFIGS[1]
 
 
 # --- Helper ---
@@ -38,24 +40,24 @@ def _run_waves(spawner: WaveSpawner, count: int) -> None:
 
 def test_boss_triggers_after_nine_waves():
     """Boss trigger fires after 9 complete waves."""
-    spawner = WaveSpawner()
-    _run_waves(spawner, BOSS_SPAWN_AFTER_WAVES)
+    spawner = WaveSpawner(_Z1)
+    _run_waves(spawner, _Z1["waves_before_boss"])
     assert spawner.boss_triggered is True
-    assert spawner.total_waves_completed >= BOSS_SPAWN_AFTER_WAVES
+    assert spawner.total_waves_completed >= _Z1["waves_before_boss"]
 
 
 def test_boss_does_not_trigger_before_nine_waves():
     """Boss trigger does not fire before 9 waves."""
-    spawner = WaveSpawner()
-    _run_waves(spawner, BOSS_SPAWN_AFTER_WAVES - 1)
+    spawner = WaveSpawner(_Z1)
+    _run_waves(spawner, _Z1["waves_before_boss"] - 1)
     assert spawner.boss_triggered is False
-    assert spawner.total_waves_completed == BOSS_SPAWN_AFTER_WAVES - 1
+    assert spawner.total_waves_completed == _Z1["waves_before_boss"] - 1
 
 
 def test_wave_spawner_reset_clears_boss_trigger():
     """Reset clears total_waves_completed and boss_triggered."""
-    spawner = WaveSpawner()
-    _run_waves(spawner, BOSS_SPAWN_AFTER_WAVES)
+    spawner = WaveSpawner(_Z1)
+    _run_waves(spawner, _Z1["waves_before_boss"])
     assert spawner.boss_triggered is True
     spawner.reset()
     assert spawner.total_waves_completed == 0
