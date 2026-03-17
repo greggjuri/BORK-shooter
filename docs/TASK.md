@@ -30,6 +30,9 @@ _(none)_
 - [x] fix: Smoother circular explosion particles with opacity fade, tiered sizes, and glow layers
 - [x] fix: Boss hull disappears on final detonation (no lingering sprite)
 - [x] docs: Added "too much is not enough" design principle
+- [x] fix: Halved player fire rate (0.18 → 0.36 cooldown)
+- [x] feat: Redesigned speed powerup as glassy button
+- [x] init-09: Tiered powerup system — speed and fire rate 3-level tiers, death penalty, HUD pips (PRP-009 complete)
 
 ---
 
