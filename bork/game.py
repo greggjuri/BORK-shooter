@@ -19,7 +19,7 @@ from bork.constants import (
     PLAYER_START_X,
     PLAYER_START_Y,
     POINTS_BASIC_ENEMY,
-    POWERUP_COLOR,
+    POWERUP_BURST_COLOR,
     POWERUP_SIZE,
     POWERUP_SPAWN_DELAY,
     POWERUP_SPAWN_Y,
@@ -34,7 +34,6 @@ from bork.constants import (
     SCREEN_WIDTH,
     SENTINEL_CORE_HP,
     SENTINEL_CORE_POINTS,
-    SPEED_BOOST_MULTIPLIER,
     STARTING_LIVES,
     STATE_BOSS_DYING,
     STATE_BOSS_FIGHT,
@@ -283,6 +282,7 @@ class BorkGame(arcade.Window):
                     self.player.vx = 0.0
                     self.player.vy = 0.0
                     self.player.invulnerable_timer = RESPAWN_INVULNERABLE_TIME
+                    self.player.downgrade_on_death()
                 return
 
     def _check_powerup_player_collisions(self) -> None:
@@ -297,20 +297,17 @@ class BorkGame(arcade.Window):
                 self.player.y,
                 PLAYER_SHIP_SIZE,
             ):
-                # Apply effect (no stacking)
-                if self.player.speed_multiplier <= 1.0:
-                    self.player.speed_multiplier = SPEED_BOOST_MULTIPLIER
-                self.particle_system.add(create_powerup_burst(p.x, p.y, POWERUP_COLOR))
+                # Apply tier level-up
+                if p.kind == "speed":
+                    self.player.speed_level = min(3, self.player.speed_level + 1)
+                self.particle_system.add(create_powerup_burst(p.x, p.y, POWERUP_BURST_COLOR))
             else:
                 remaining.append(p)
         self.powerups = remaining
 
-    def _get_active_powerups(self) -> list[str]:
-        """Build list of active powerup names for HUD display."""
-        powerups: list[str] = []
-        if self.player.speed_multiplier > 1.0:
-            powerups.append("speed")
-        return powerups
+    def _get_tier_levels(self) -> tuple[int, int]:
+        """Return (speed_level, fire_rate_level) for HUD display."""
+        return (self.player.speed_level, self.player.fire_rate_level)
 
     def on_draw(self) -> None:
         """Draw all game entities."""
@@ -364,12 +361,14 @@ class BorkGame(arcade.Window):
             self.screen_flash.draw()
 
         # HUD (drawn without shake)
+        spd, rof = self._get_tier_levels()
         self.hud.draw(
             self.scoring.score,
             self.scoring.multiplier,
             self.scoring.combo,
             self.lives,
-            self._get_active_powerups(),
+            spd,
+            rof,
         )
 
         # Boss health bar (HUD layer, no shake)

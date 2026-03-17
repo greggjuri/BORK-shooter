@@ -20,11 +20,14 @@ from bork.constants import (
     HUD_MULTI_FONT_SIZE,
     HUD_MULTI_PULSE_AMOUNT,
     HUD_MULTI_PULSE_SPEED,
-    HUD_POWERUP_FONT_SIZE,
     HUD_PRIMARY,
     HUD_SCORE_FONT_SIZE,
+    HUD_TIER_ACTIVE_COLOR,
+    HUD_TIER_FONT_SIZE,
+    HUD_TIER_INACTIVE_COLOR,
+    HUD_TIER_PIP_SIZE,
+    HUD_TIER_Y,
     HUD_ZONE_FONT_SIZE,
-    POWERUP_COLOR,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
     STARTING_LIVES,
@@ -59,14 +62,15 @@ class HUD:
         multiplier: float,
         combo: int,
         lives: int,
-        active_powerups: list[str],
+        speed_level: int,
+        fire_rate_level: int,
     ) -> None:
         """Draw the full HUD overlay."""
         self._draw_score(score)
         self._draw_multiplier(multiplier)
         self._draw_combo(combo)
         self._draw_lives(lives)
-        self._draw_powerups(active_powerups)
+        self._draw_tier_indicators(speed_level, fire_rate_level)
         self._draw_zone()
         self._draw_milestone()
 
@@ -153,24 +157,40 @@ class HUD:
                 anchor_y="top",
             )
 
-    def _draw_powerups(self, active_powerups: list[str]) -> None:
-        """Draw active powerup indicators in brackets."""
-        if not active_powerups:
-            return
-        x = SCREEN_WIDTH - HUD_MARGIN
-        y = SCREEN_HEIGHT - HUD_MARGIN - 40
-        for pu in active_powerups:
-            label = {"speed": "SPEED+"}.get(pu, pu.upper())
-            arcade.draw_text(
-                f"[{label}]",
-                x,
-                y,
-                POWERUP_COLOR,
-                font_size=HUD_POWERUP_FONT_SIZE,
-                anchor_x="right",
-                anchor_y="top",
+    def _draw_tier_indicators(
+        self, speed_level: int, fire_rate_level: int
+    ) -> None:
+        """Draw SPD and ROF tier pip indicators at bottom of screen."""
+        s = HUD_TIER_PIP_SIZE
+        y = HUD_TIER_Y
+
+        # SPD indicator — left side
+        x = HUD_MARGIN
+        arcade.draw_text(
+            "SPD", x, y, HUD_PRIMARY,
+            font_size=HUD_TIER_FONT_SIZE, anchor_x="left", anchor_y="center",
+        )
+        pip_x = x + 35
+        for i in range(3):
+            color = HUD_TIER_ACTIVE_COLOR if i < speed_level else HUD_TIER_INACTIVE_COLOR
+            arcade.draw_lrbt_rectangle_filled(
+                pip_x - s, pip_x + s, y - s, y + s, color,
             )
-            y -= 16
+            pip_x += s * 3
+
+        # ROF indicator — offset right of SPD
+        x = HUD_MARGIN + 110
+        arcade.draw_text(
+            "ROF", x, y, HUD_PRIMARY,
+            font_size=HUD_TIER_FONT_SIZE, anchor_x="left", anchor_y="center",
+        )
+        pip_x = x + 35
+        for i in range(3):
+            color = HUD_TIER_ACTIVE_COLOR if i < fire_rate_level else HUD_TIER_INACTIVE_COLOR
+            arcade.draw_lrbt_rectangle_filled(
+                pip_x - s, pip_x + s, y - s, y + s, color,
+            )
+            pip_x += s * 3
 
     def _draw_zone(self) -> None:
         """Draw zone indicator (static for now)."""

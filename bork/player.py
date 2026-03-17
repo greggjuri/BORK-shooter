@@ -6,10 +6,10 @@ import arcade
 
 from bork.constants import (
     EXHAUST_LAYERS,
+    FIRE_RATE_LEVELS,
     INVULNERABLE_BLINK_RATE,
     PLAYER_ACCELERATION,
     PLAYER_FRICTION,
-    PLAYER_MAX_SPEED,
     PLAYER_SHIP_SIZE,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
@@ -18,7 +18,7 @@ from bork.constants import (
     SHIP_COCKPIT_COLOR,
     SHIP_DARK_COLOR,
     SHIP_OUTLINE_COLOR,
-    SHOOT_COOLDOWN,
+    SPEED_LEVELS,
     TARGET_FPS,
 )
 
@@ -32,7 +32,8 @@ class Player:
         self.vx = 0.0
         self.vy = 0.0
         self.shoot_timer = 0.0
-        self.speed_multiplier = 1.0
+        self.speed_level: int = 1
+        self.fire_rate_level: int = 1
         self.invulnerable_timer: float = 0.0
 
     @property
@@ -65,16 +66,16 @@ class Player:
             ax *= factor
             ay *= factor
 
-        self.vx += ax * self.speed_multiplier * dt
-        self.vy += ay * self.speed_multiplier * dt
+        self.vx += ax * dt
+        self.vy += ay * dt
 
         # Apply friction (frame-rate independent)
         friction = PLAYER_FRICTION ** (dt * TARGET_FPS)
         self.vx *= friction
         self.vy *= friction
 
-        # Clamp to max speed (adjusted by powerup multiplier)
-        max_speed = PLAYER_MAX_SPEED * self.speed_multiplier
+        # Clamp to max speed (set by speed tier level)
+        max_speed = SPEED_LEVELS[self.speed_level - 1]
         speed = math.sqrt(self.vx * self.vx + self.vy * self.vy)
         if speed > max_speed:
             scale = max_speed / speed
@@ -145,5 +146,10 @@ class Player:
         return self.shoot_timer <= 0.0
 
     def reset_shoot_timer(self) -> None:
-        """Reset the shoot cooldown timer."""
-        self.shoot_timer = SHOOT_COOLDOWN
+        """Reset the shoot cooldown based on fire rate tier."""
+        self.shoot_timer = FIRE_RATE_LEVELS[self.fire_rate_level - 1]
+
+    def downgrade_on_death(self) -> None:
+        """Drop both tier levels by 1 on death (min 1)."""
+        self.speed_level = max(1, self.speed_level - 1)
+        self.fire_rate_level = max(1, self.fire_rate_level - 1)

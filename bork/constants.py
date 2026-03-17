@@ -69,8 +69,11 @@ POWERUP_TEXT_COLOR = (0, 0, 0)  # black letter
 POWERUP_SPAWN_DELAY = 1.0  # seconds after wave 3 completes
 POWERUP_SPAWN_Y = 0.70  # 30% from top = 70% up
 
-# Powerup effects
-SPEED_BOOST_MULTIPLIER = 1.35  # 35% speed increase
+# Powerup tier levels
+SPEED_LEVELS = (350.0, 470.0, 590.0)  # max speed per tier (level 1/2/3)
+FIRE_RATE_LEVELS = (0.36, 0.24, 0.14)  # shoot cooldown per tier (lower = faster)
+POWERUP_LABEL_COLOR = (255, 255, 255, 220)  # white letter on glassy button
+POWERUP_BURST_COLOR = (0, 200, 180)  # teal burst on collection
 
 # Powerup pulse animation
 POWERUP_PULSE_SPEED = 4.0  # oscillations per second
@@ -147,6 +150,13 @@ HUD_LIVES_FONT_SIZE = 16
 HUD_POWERUP_FONT_SIZE = 11
 HUD_ZONE_FONT_SIZE = 12
 HUD_MILESTONE_FONT_SIZE = 28
+
+# HUD tier indicators
+HUD_TIER_Y = 30
+HUD_TIER_FONT_SIZE = 11
+HUD_TIER_ACTIVE_COLOR = (0, 255, 180)  # bright teal for filled pips
+HUD_TIER_INACTIVE_COLOR = (40, 60, 70)  # dim for unfilled pips
+HUD_TIER_PIP_SIZE = 6  # pip square half-size
 
 # HUD multiplier pulse
 HUD_MULTI_PULSE_SPEED = 3.0  # pulses per second when active

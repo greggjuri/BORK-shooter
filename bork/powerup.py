@@ -5,6 +5,7 @@ import math
 import arcade
 
 from bork.constants import (
+    POWERUP_LABEL_COLOR,
     POWERUP_PULSE_AMOUNT,
     POWERUP_PULSE_SPEED,
     POWERUP_SIZE,
@@ -53,6 +54,13 @@ class Powerup:
 
         # Inner circle (brighter, slightly smaller for depth)
         arcade.draw_circle_filled(cx, cy, r * 0.78, _INNER_COLOR)
+
+        # Centered letter label
+        arcade.draw_text(
+            "S", cx, cy, POWERUP_LABEL_COLOR,
+            font_size=int(r * 0.8), bold=True,
+            anchor_x="center", anchor_y="center",
+        )
 
         # Highlight arc — ellipse in upper-left quadrant for glass reflection
         arcade.draw_ellipse_filled(

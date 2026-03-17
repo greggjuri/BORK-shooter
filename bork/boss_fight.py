@@ -240,3 +240,4 @@ def _handle_player_hit(game: BorkGame) -> None:
         game.player.vx = 0.0
         game.player.vy = 0.0
         game.player.invulnerable_timer = RESPAWN_INVULNERABLE_TIME
+        game.player.downgrade_on_death()
