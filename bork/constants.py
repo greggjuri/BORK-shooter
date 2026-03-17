@@ -30,19 +30,19 @@ ENEMY_SPEED = 150.0  # pixels/sec (horizontal, leftward)
 ENEMY_SIZE = 15  # half-width for collision and drawing
 ENEMY_COLOR = (255, 60, 60)  # distinct red
 
-# Enemy crescent raider colors
-ENEMY_BODY_COLOR = (42, 42, 58)  # #2a2a3a — main crescent
-ENEMY_HULL_COLOR = (30, 30, 46)  # #1e1e2e — center hull plate
-ENEMY_PLATE_COLOR = (53, 53, 69)  # #353545 — armor plates
-ENEMY_STROKE_COLOR = (255, 68, 68)  # red outline
-ENEMY_EYE_COLOR = (255, 51, 51)  # scanner eye outer
-ENEMY_EYE_BRIGHT = (255, 102, 102)  # scanner eye inner
+# Enemy bat wing colors
+ENEMY_BATWING_BODY_COLOR = (42, 42, 58)  # #2a2a3a — wings
+ENEMY_BATWING_HULL_COLOR = (30, 30, 46)  # #1e1e2e — center hull plate
+ENEMY_BATWING_PLATE_COLOR = (53, 53, 69)  # #353545 — fuselage
+ENEMY_BATWING_STROKE_COLOR = (255, 68, 68)  # red outline
+ENEMY_BATWING_EYE_COLOR = (255, 51, 51)  # scanner eye outer
+ENEMY_BATWING_EYE_BRIGHT = (255, 102, 102)  # scanner eye inner
 
 # Enemy wobble
-ENEMY_WOBBLE_SPEED = 3.0  # oscillations per second
-ENEMY_WOBBLE_DEGREES = 3.0  # max rotation in degrees
-ENEMY_BOB_SPEED = 2.0  # vertical bob oscillations per second
-ENEMY_BOB_PIXELS = 2.0  # max vertical bob offset in pixels
+ENEMY_BATWING_WOBBLE_SPEED = 1.5  # oscillations per second
+ENEMY_BATWING_WOBBLE_DEGREES = 3.0  # max rotation in degrees
+ENEMY_BATWING_BOB_SPEED = 1.0  # vertical bob oscillations per second
+ENEMY_BATWING_BOB_PIXELS = 2.0  # max vertical bob offset in pixels
 
 # Waves
 WAVE_START_DELAY = 3.0  # seconds before first wave

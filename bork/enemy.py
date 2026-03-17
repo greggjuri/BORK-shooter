@@ -5,17 +5,17 @@ import math
 import arcade
 
 from bork.constants import (
-    ENEMY_BOB_PIXELS,
-    ENEMY_BOB_SPEED,
-    ENEMY_BODY_COLOR,
-    ENEMY_EYE_BRIGHT,
-    ENEMY_EYE_COLOR,
-    ENEMY_PLATE_COLOR,
+    ENEMY_BATWING_BOB_PIXELS,
+    ENEMY_BATWING_BOB_SPEED,
+    ENEMY_BATWING_BODY_COLOR,
+    ENEMY_BATWING_EYE_BRIGHT,
+    ENEMY_BATWING_EYE_COLOR,
+    ENEMY_BATWING_PLATE_COLOR,
+    ENEMY_BATWING_STROKE_COLOR,
+    ENEMY_BATWING_WOBBLE_DEGREES,
+    ENEMY_BATWING_WOBBLE_SPEED,
     ENEMY_SIZE,
     ENEMY_SPEED,
-    ENEMY_STROKE_COLOR,
-    ENEMY_WOBBLE_DEGREES,
-    ENEMY_WOBBLE_SPEED,
     SINE_AMPLITUDE,
     SINE_FREQUENCY,
 )
@@ -55,8 +55,8 @@ class Enemy:
     def wobble_angle(self) -> float:
         """Visual wobble rotation in radians."""
         return math.radians(
-            math.sin(self.time_alive * ENEMY_WOBBLE_SPEED * 2 * math.pi)
-            * ENEMY_WOBBLE_DEGREES
+            math.sin(self.time_alive * ENEMY_BATWING_WOBBLE_SPEED * 2 * math.pi)
+            * ENEMY_BATWING_WOBBLE_DEGREES
         )
 
     def update(self, dt: float) -> None:
@@ -75,7 +75,7 @@ class Enemy:
     @property
     def bob_offset(self) -> float:
         """Visual vertical bob offset in pixels."""
-        return math.sin(self.time_alive * ENEMY_BOB_SPEED * 2 * math.pi) * ENEMY_BOB_PIXELS
+        return math.sin(self.time_alive * ENEMY_BATWING_BOB_SPEED * 2 * math.pi) * ENEMY_BATWING_BOB_PIXELS
 
     def draw(self) -> None:
         """Draw the enemy as a bat wing fighter with wobble and bob."""
@@ -87,18 +87,18 @@ class Enemy:
 
         # Top wing
         top = _rotate_points(_TOP_WING, cx, cy, a)
-        arcade.draw_polygon_filled(top, ENEMY_BODY_COLOR)
-        arcade.draw_polygon_outline(top, ENEMY_STROKE_COLOR)
+        arcade.draw_polygon_filled(top, ENEMY_BATWING_BODY_COLOR)
+        arcade.draw_polygon_outline(top, ENEMY_BATWING_STROKE_COLOR)
 
         # Bottom wing
         bot = _rotate_points(_BOT_WING, cx, cy, a)
-        arcade.draw_polygon_filled(bot, ENEMY_BODY_COLOR)
-        arcade.draw_polygon_outline(bot, ENEMY_STROKE_COLOR)
+        arcade.draw_polygon_filled(bot, ENEMY_BATWING_BODY_COLOR)
+        arcade.draw_polygon_outline(bot, ENEMY_BATWING_STROKE_COLOR)
 
         # Center fuselage
         fuse = _rotate_points(_FUSELAGE, cx, cy, a)
-        arcade.draw_polygon_filled(fuse, ENEMY_PLATE_COLOR)
-        arcade.draw_polygon_outline(fuse, ENEMY_STROKE_COLOR)
+        arcade.draw_polygon_filled(fuse, ENEMY_BATWING_PLATE_COLOR)
+        arcade.draw_polygon_outline(fuse, ENEMY_BATWING_STROKE_COLOR)
 
         # Wing accent lines
         for (sx, sy), (ex, ey) in _ACCENT_LINES:
@@ -111,5 +111,5 @@ class Enemy:
         # Scanner eye
         ex = cx + 2 * cos_a
         ey = cy + 2 * sin_a
-        arcade.draw_ellipse_filled(ex, ey, 6, 4, (*ENEMY_EYE_COLOR[:3], 178))
-        arcade.draw_ellipse_filled(ex, ey, 3, 2, ENEMY_EYE_BRIGHT)
+        arcade.draw_ellipse_filled(ex, ey, 6, 4, (*ENEMY_BATWING_EYE_COLOR[:3], 178))
+        arcade.draw_ellipse_filled(ex, ey, 3, 2, ENEMY_BATWING_EYE_BRIGHT)
