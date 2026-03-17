@@ -40,7 +40,9 @@ ENEMY_EYE_BRIGHT = (255, 102, 102)  # scanner eye inner
 
 # Enemy wobble
 ENEMY_WOBBLE_SPEED = 3.0  # oscillations per second
-ENEMY_WOBBLE_DEGREES = 6.0  # max rotation in degrees
+ENEMY_WOBBLE_DEGREES = 3.0  # max rotation in degrees
+ENEMY_BOB_SPEED = 2.0  # vertical bob oscillations per second
+ENEMY_BOB_PIXELS = 2.0  # max vertical bob offset in pixels
 
 # Waves
 WAVE_START_DELAY = 3.0  # seconds before first wave

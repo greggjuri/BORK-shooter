@@ -5,6 +5,8 @@ import math
 import arcade
 
 from bork.constants import (
+    ENEMY_BOB_PIXELS,
+    ENEMY_BOB_SPEED,
     ENEMY_BODY_COLOR,
     ENEMY_EYE_BRIGHT,
     ENEMY_EYE_COLOR,
@@ -70,9 +72,15 @@ class Enemy:
         """Return True if past the left edge of the screen."""
         return self.x < -ENEMY_SIZE
 
+    @property
+    def bob_offset(self) -> float:
+        """Visual vertical bob offset in pixels."""
+        return math.sin(self.time_alive * ENEMY_BOB_SPEED * 2 * math.pi) * ENEMY_BOB_PIXELS
+
     def draw(self) -> None:
-        """Draw the enemy as a bat wing fighter with wobble."""
-        cx, cy = self.x, self.y
+        """Draw the enemy as a bat wing fighter with wobble and bob."""
+        cx = self.x
+        cy = self.y + self.bob_offset
         a = self.wobble_angle
         cos_a = math.cos(a)
         sin_a = math.sin(a)
