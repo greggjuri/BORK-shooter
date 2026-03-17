@@ -218,6 +218,12 @@ SENTINEL_CORE_GLOW_COLOR = (255, 200, 100)
 SENTINEL_ARMOR_COLOR = (80, 85, 95)
 SENTINEL_OPENING_COLOR = (20, 25, 35)  # dark recessed slot color
 
+# Sentinel hull polygon colors
+SENTINEL_HULL_COLOR = (42, 42, 58)  # #2a2a3a — outer hull fill
+SENTINEL_HULL_STROKE = (136, 136, 170)  # #8888aa — outer hull outline
+SENTINEL_PLATE_COLOR = (30, 30, 46)  # #1e1e2e — inner armor plate fill
+SENTINEL_PLATE_STROKE = (102, 102, 170)  # #6666aa — inner armor plate outline
+
 # Sentinel engine exhaust glow layers (offset_x, width, height, r, g, b, alpha)
 # Sorted outermost first so inner layers draw on top. Extends rightward from engine.
 SENTINEL_EXHAUST_LAYERS = (

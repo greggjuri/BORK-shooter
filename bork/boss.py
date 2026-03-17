@@ -17,11 +17,9 @@ from bork.constants import (
     BOSS_BULLET_SPEED_MEDIUM,
     SCREEN_HEIGHT,
     SENTINEL_AIMED_INTERVAL,
-    SENTINEL_ARMOR_COLOR,
     SENTINEL_BATTLE_X,
     SENTINEL_BEAM_CHARGE_TIME,
     SENTINEL_BEAM_COOLDOWN,
-    SENTINEL_BODY_ACCENT,
     SENTINEL_CORE_COLOR,
     SENTINEL_CORE_GLOW_COLOR,
     SENTINEL_CORE_HP,
@@ -29,12 +27,14 @@ from bork.constants import (
     SENTINEL_ENTER_SPEED,
     SENTINEL_EXHAUST_LAYERS,
     SENTINEL_HEIGHT,
+    SENTINEL_HULL_COLOR,
+    SENTINEL_HULL_STROKE,
     SENTINEL_LUNGE_DURATION,
     SENTINEL_LUNGE_SPEED,
-    SENTINEL_OPENING_COLOR,
-    SENTINEL_OPENING_HEIGHT,
     SENTINEL_PHASE2_THRESHOLD,
     SENTINEL_PHASE3_THRESHOLD,
+    SENTINEL_PLATE_COLOR,
+    SENTINEL_PLATE_STROKE,
     SENTINEL_SPREAD_INTERVAL_P1,
     SENTINEL_SPREAD_INTERVAL_P2,
     SENTINEL_TRACK_SPEED,
@@ -42,9 +42,20 @@ from bork.constants import (
     SENTINEL_TRACK_SPEED_P3,
 )
 
-# Boss sub-part dimensions for layout
-_BODY_WIDTH = 100
-_BODY_HEIGHT = 80
+# Hull polygon vertex offsets (relative to self.x, self.y).
+# Concept reference was 160px wide; scaled x by 200/160 = 1.25 for SENTINEL_WIDTH=200.
+# Top hull: above the core gap. Nose tip tapers left, body widens toward rear engines.
+_TOP_HULL = (
+    (-75, 12), (-56, 30), (-25, 55), (12, 70),
+    (50, 75), (81, 70), (100, 60), (100, 18),
+)
+_TOP_PLATE = (
+    (-62, 16), (-48, 32), (-19, 50), (12, 62),
+    (48, 67), (78, 63), (94, 55), (94, 22),
+)
+# Bottom hull: mirror of top (negate y offsets).
+_BOTTOM_HULL = tuple((ox, -oy) for ox, oy in _TOP_HULL)
+_BOTTOM_PLATE = tuple((ox, -oy) for ox, oy in _TOP_PLATE)
 
 
 class Sentinel:
@@ -279,8 +290,7 @@ class Sentinel:
     def draw(self) -> None:
         """Draw the Sentinel boss using geometric shapes."""
         self._draw_engine_exhaust()
-        self._draw_body()
-        self._draw_opening()
+        self._draw_hull()
         self._draw_core()
         if self.beam_visible_timer > 0:
             self._draw_beam()
@@ -289,62 +299,67 @@ class Sentinel:
 
     def _draw_engine_exhaust(self) -> None:
         """Draw layered gradient exhaust glow for top and bottom engine blocks."""
-        # Engine blocks sit at top and bottom of the body, exhaust extends rightward
-        top_engine_y = self.y + _BODY_HEIGHT / 2 - 10
-        bottom_engine_y = self.y - _BODY_HEIGHT / 2 + 10
-        engine_x = self.x + _BODY_WIDTH / 2
+        # Exhaust emanates rightward from rear of each hull half
+        top_engine_y = self.y + 39  # midpoint of top hull rear (y+18 to y+60)
+        bottom_engine_y = self.y - 39
+        engine_x = self.x + 100  # right edge of hull
 
         for ey in (top_engine_y, bottom_engine_y):
             for ox, w, h, r, g, b, a in SENTINEL_EXHAUST_LAYERS:
                 arcade.draw_ellipse_filled(engine_x + ox, ey, w, h, (r, g, b, a))
 
-    def _draw_body(self) -> None:
-        """Draw the armored body with upper and lower armor panels."""
-        # Full body background in armor color
-        arcade.draw_lrbt_rectangle_filled(
-            self.x - _BODY_WIDTH / 2,
-            self.x + _BODY_WIDTH / 2,
-            self.y - _BODY_HEIGHT / 2,
-            self.y + _BODY_HEIGHT / 2,
-            SENTINEL_ARMOR_COLOR,
+    def _draw_hull(self) -> None:
+        """Draw polygon-based hull halves with armor plates and details."""
+        x, y = self.x, self.y
+        stroke_dim = (*SENTINEL_HULL_STROKE[:3], 60)
+        plate_dim = (*SENTINEL_PLATE_STROKE[:3], 50)
+
+        # --- Top hull ---
+        top_pts = [(x + ox, y + oy) for ox, oy in _TOP_HULL]
+        arcade.draw_polygon_filled(top_pts, SENTINEL_HULL_COLOR)
+        arcade.draw_polygon_outline(top_pts, SENTINEL_HULL_STROKE, 2)
+
+        # Top inner armor plate
+        top_plate_pts = [(x + ox, y + oy) for ox, oy in _TOP_PLATE]
+        arcade.draw_polygon_filled(top_plate_pts, SENTINEL_PLATE_COLOR)
+        arcade.draw_polygon_outline(top_plate_pts, SENTINEL_PLATE_STROKE, 1)
+
+        # --- Bottom hull ---
+        bot_pts = [(x + ox, y + oy) for ox, oy in _BOTTOM_HULL]
+        arcade.draw_polygon_filled(bot_pts, SENTINEL_HULL_COLOR)
+        arcade.draw_polygon_outline(bot_pts, SENTINEL_HULL_STROKE, 2)
+
+        # Bottom inner armor plate
+        bot_plate_pts = [(x + ox, y + oy) for ox, oy in _BOTTOM_PLATE]
+        arcade.draw_polygon_filled(bot_plate_pts, SENTINEL_PLATE_COLOR)
+        arcade.draw_polygon_outline(bot_plate_pts, SENTINEL_PLATE_STROKE, 1)
+
+        # --- Front armor lip lines (along inner edges near gap) ---
+        arcade.draw_line(x - 75, y + 12, x + 100, y + 18, stroke_dim, 1)
+        arcade.draw_line(x - 75, y - 12, x + 100, y - 18, stroke_dim, 1)
+
+        # --- Panel detail lines across hull surfaces ---
+        arcade.draw_line(x - 30, y + 45, x + 70, y + 65, plate_dim, 1)
+        arcade.draw_line(x + 20, y + 35, x + 90, y + 45, plate_dim, 1)
+        arcade.draw_line(x - 30, y - 45, x + 70, y - 65, plate_dim, 1)
+        arcade.draw_line(x + 20, y - 35, x + 90, y - 45, plate_dim, 1)
+
+        # --- Weapon port rects near front edges ---
+        arcade.draw_lbwh_rectangle_filled(
+            x - 55, y + 20, 8, 5, SENTINEL_HULL_STROKE
         )
-        # Accent outline
-        arcade.draw_lrbt_rectangle_outline(
-            self.x - _BODY_WIDTH / 2,
-            self.x + _BODY_WIDTH / 2,
-            self.y - _BODY_HEIGHT / 2,
-            self.y + _BODY_HEIGHT / 2,
-            SENTINEL_BODY_ACCENT,
-            border_width=2,
-        )
-        # Horizontal accent lines at armor panel edges
-        arcade.draw_line(
-            self.x - _BODY_WIDTH / 2,
-            self.y - _BODY_HEIGHT / 2 + 4,
-            self.x + _BODY_WIDTH / 2,
-            self.y - _BODY_HEIGHT / 2 + 4,
-            (*SENTINEL_BODY_ACCENT[:3], 80),
-            1,
-        )
-        arcade.draw_line(
-            self.x - _BODY_WIDTH / 2,
-            self.y + _BODY_HEIGHT / 2 - 4,
-            self.x + _BODY_WIDTH / 2,
-            self.y + _BODY_HEIGHT / 2 - 4,
-            (*SENTINEL_BODY_ACCENT[:3], 80),
-            1,
+        arcade.draw_lbwh_rectangle_filled(
+            x - 55, y - 25, 8, 5, SENTINEL_HULL_STROKE
         )
 
-    def _draw_opening(self) -> None:
-        """Draw the recessed core opening slot at vertical center."""
-        half_h = SENTINEL_OPENING_HEIGHT / 2
-        arcade.draw_lrbt_rectangle_filled(
-            self.x - _BODY_WIDTH / 2,
-            self.x + _BODY_WIDTH / 2,
-            self.y - half_h,
-            self.y + half_h,
-            SENTINEL_OPENING_COLOR,
-        )
+        # --- Surface vent rects ---
+        arcade.draw_lbwh_rectangle_filled(x + 30, y + 50, 12, 3, plate_dim)
+        arcade.draw_lbwh_rectangle_filled(x + 55, y + 45, 10, 3, plate_dim)
+        arcade.draw_lbwh_rectangle_filled(x + 30, y - 53, 12, 3, plate_dim)
+        arcade.draw_lbwh_rectangle_filled(x + 55, y - 48, 10, 3, plate_dim)
+
+        # --- Nose tip ellipse ---
+        arcade.draw_ellipse_filled(x - 75, y, 8, 18, SENTINEL_HULL_STROKE)
 
     def _draw_core(self) -> None:
         """Draw the glowing core visible through the opening."""
