@@ -16,7 +16,7 @@ PLAYER_START_Y = SCREEN_HEIGHT // 2
 PROJECTILE_SPEED = 700.0  # pixels/sec
 PROJECTILE_LENGTH = 16
 PROJECTILE_WIDTH = 3
-SHOOT_COOLDOWN = 0.18  # seconds between shots
+SHOOT_COOLDOWN = 0.36  # seconds between shots
 
 # Starfield
 STAR_LAYER_COUNT = 2
