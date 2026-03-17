@@ -27,6 +27,7 @@ from bork.constants import (
     SENTINEL_CORE_HP,
     SENTINEL_CORE_SIZE,
     SENTINEL_ENTER_SPEED,
+    SENTINEL_EXHAUST_LAYERS,
     SENTINEL_HEIGHT,
     SENTINEL_LUNGE_DURATION,
     SENTINEL_LUNGE_SPEED,
@@ -277,6 +278,7 @@ class Sentinel:
 
     def draw(self) -> None:
         """Draw the Sentinel boss using geometric shapes."""
+        self._draw_engine_exhaust()
         self._draw_body()
         self._draw_opening()
         self._draw_core()
@@ -284,6 +286,17 @@ class Sentinel:
             self._draw_beam()
         if self.beam_charging:
             self._draw_beam_charge()
+
+    def _draw_engine_exhaust(self) -> None:
+        """Draw layered gradient exhaust glow for top and bottom engine blocks."""
+        # Engine blocks sit at top and bottom of the body, exhaust extends rightward
+        top_engine_y = self.y + _BODY_HEIGHT / 2 - 10
+        bottom_engine_y = self.y - _BODY_HEIGHT / 2 + 10
+        engine_x = self.x + _BODY_WIDTH / 2
+
+        for ey in (top_engine_y, bottom_engine_y):
+            for ox, w, h, r, g, b, a in SENTINEL_EXHAUST_LAYERS:
+                arcade.draw_ellipse_filled(engine_x + ox, ey, w, h, (r, g, b, a))
 
     def _draw_body(self) -> None:
         """Draw the armored body with upper and lower armor panels."""

@@ -218,6 +218,21 @@ SENTINEL_CORE_GLOW_COLOR = (255, 200, 100)
 SENTINEL_ARMOR_COLOR = (80, 85, 95)
 SENTINEL_OPENING_COLOR = (20, 25, 35)  # dark recessed slot color
 
+# Sentinel engine exhaust glow layers (offset_x, width, height, r, g, b, alpha)
+# Sorted outermost first so inner layers draw on top. Extends rightward from engine.
+SENTINEL_EXHAUST_LAYERS = (
+    (48, 52, 22, 140, 140, 255, 5),
+    (44, 46, 20, 130, 130, 250, 8),
+    (40, 40, 18, 120, 120, 245, 14),
+    (36, 35, 16, 110, 110, 240, 22),
+    (32, 30, 14, 100, 100, 235, 32),
+    (28, 25, 12, 90, 90, 225, 45),
+    (24, 20, 10, 75, 75, 210, 60),
+    (21, 16, 8, 60, 60, 200, 75),
+    (18, 12, 7, 45, 45, 190, 90),
+    (16, 9, 6, 30, 30, 180, 102),
+)
+
 # Sentinel movement
 SENTINEL_BATTLE_X = SCREEN_WIDTH - 150
 SENTINEL_ENTER_SPEED = 120.0
