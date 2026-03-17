@@ -30,6 +30,18 @@ ENEMY_SPEED = 150.0  # pixels/sec (horizontal, leftward)
 ENEMY_SIZE = 15  # half-width for collision and drawing
 ENEMY_COLOR = (255, 60, 60)  # distinct red
 
+# Enemy crescent raider colors
+ENEMY_BODY_COLOR = (42, 42, 58)  # #2a2a3a — main crescent
+ENEMY_HULL_COLOR = (30, 30, 46)  # #1e1e2e — center hull plate
+ENEMY_PLATE_COLOR = (53, 53, 69)  # #353545 — armor plates
+ENEMY_STROKE_COLOR = (255, 68, 68)  # red outline
+ENEMY_EYE_COLOR = (255, 51, 51)  # scanner eye outer
+ENEMY_EYE_BRIGHT = (255, 102, 102)  # scanner eye inner
+
+# Enemy wobble
+ENEMY_WOBBLE_SPEED = 3.0  # oscillations per second
+ENEMY_WOBBLE_DEGREES = 6.0  # max rotation in degrees
+
 # Waves
 WAVE_START_DELAY = 3.0  # seconds before first wave
 WAVE_PAUSE = 2.0  # seconds between waves
