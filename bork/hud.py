@@ -135,30 +135,29 @@ class HUD:
 
     def _draw_lives(self, lives: int) -> None:
         """Draw lives as chevron icons below ZONE label in top-right corner."""
-        right_x = SCREEN_WIDTH - HUD_MARGIN - 10
+        left_x = SCREEN_WIDTH - HUD_MARGIN - 120
         # LIVES label sits 36px below ZONE
         label_y = SCREEN_HEIGHT - HUD_MARGIN - 36
         arcade.draw_text(
             "LIVES",
-            right_x,
+            left_x,
             label_y,
             HUD_DIM,
             font_size=HUD_LABEL_FONT_SIZE,
-            anchor_x="right",
+            anchor_x="left",
             anchor_y="top",
         )
-        # Life icons below label, right-aligned with ZONE/LIVES labels
+        # Life icons below label
         icon_y = label_y - 18
         for i in range(STARTING_LIVES):
             color = HUD_PRIMARY if i < lives else HUD_DIM
-            ix = right_x - (STARTING_LIVES - 1 - i) * 20
             arcade.draw_text(
                 "\u25b8",
-                ix,
+                left_x + i * 20,
                 icon_y,
                 color,
                 font_size=HUD_LIVES_FONT_SIZE,
-                anchor_x="right",
+                anchor_x="left",
                 anchor_y="top",
             )
 
@@ -198,14 +197,14 @@ class HUD:
             pip_x += s * 3
 
     def _draw_zone(self, zone: int) -> None:
-        """Draw zone indicator at top-right with padding."""
+        """Draw zone indicator at top-right, left-aligned with LIVES below."""
         arcade.draw_text(
             f"\u25c4 ZONE {zone:02d} \u25ba",
-            SCREEN_WIDTH - HUD_MARGIN - 10,
+            SCREEN_WIDTH - HUD_MARGIN - 120,
             SCREEN_HEIGHT - HUD_MARGIN,
             HUD_DIM,
             font_size=HUD_ZONE_FONT_SIZE,
-            anchor_x="right",
+            anchor_x="left",
             anchor_y="top",
         )
 
