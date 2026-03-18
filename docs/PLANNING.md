@@ -153,12 +153,14 @@ Powerup:
 - **Constants prefix**: `SENTINEL_*`
 
 ### Marauder (Zone 2)
-- **Movement**: Sinusoidal vertical patrol at fixed X (`MARAUDER_PATROL_FREQ`, `MARAUDER_PATROL_AMP`). Frequency increases with phase. No player tracking — player must lead shots.
-- **Hull**: Forward-swept polygon, green accent plate. Same mirrored-halves + gap pattern.
-- **Phases**: 3 phases at 50%/25% HP. Phase 1: 3-way spread. Phase 2: faster spread + diagonal cross burst. Phase 3: all above + 180° arc burst, doubled patrol speed.
-- **Damage zones**: Same 2-zone model (core 2×, armor 1×).
-- **Death**: Same ADR-012 sequence.
-- **Exhaust**: 10-layer green gradient (`MARAUDER_EXHAUST_LAYERS`).
+- **Movement**: Sinusoidal vertical patrol, wider amplitude and faster frequency than Sentinel. Fixed X on right side of screen. Patrol frequency increases with phase.
+- **Patrol**: `MARAUDER_PATROL_FREQ`, `MARAUDER_PATROL_AMP` (see constants.py)
+- **Hull**: Mirrored polygon, nose left, engines right. Leaner and more angular than Sentinel. Green accent inner plate. Gap between halves = core opening with throbbing layered energy effect (3 concentric ellipses, pulsing on sine wave).
+- **Phases**: 3 phases (HP thresholds). Phase 1: 3-way spread. Phase 2: faster spread + diagonal cross burst. Phase 3: all above + 180° arc burst.
+- **Damage zones**: Core opening (2×), armor (1×) — single HP pool (ADR-009)
+- **Death**: ADR-012 staggered multi-burst sequence, hull vanishes at detonation
+- **No beam attack** — `beam_visible_timer` and `beam_y` exist at 0.0 for interface compatibility only
+- **Exhaust**: 10-layer green gradient (`MARAUDER_EXHAUST_LAYERS`), ADR-011 pattern.
 - **Constants prefix**: `MARAUDER_*`
 
 ### Boss Interface Contract
