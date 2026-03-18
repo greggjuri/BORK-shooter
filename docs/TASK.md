@@ -39,6 +39,7 @@ _(none)_
 - [x] init-08a: Zone infrastructure — ZoneManager, parameterized WaveSpawner, zone transitions (PRP-08a complete)
 - [x] refactor: Extract EnemyProjectile to shared enemy_projectile.py module
 - [x] init-08b: Zone 2 content — Dart enemy, diagonal cross pattern, nebula background (PRP-08b complete)
+- [x] fix: Top-right HUD layout — left-aligned ZONE/LIVES/icons stack, clean spacing
 
 ---
 

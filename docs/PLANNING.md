@@ -192,8 +192,13 @@ Powerup:
 - [x] Smooth circular particles with glow layers and opacity fade
 - [x] Boss disappears on final detonation
 - [x] Powerups cleared on boss transition
-- [ ] Multiple enemy types
-- [ ] Multiple levels/zones
+- [x] Tiered powerups — speed/fire rate 3-level system with death penalty
+- [x] Instant ship movement model (no acceleration ramp)
+- [x] Zone infrastructure — ZoneManager, parameterized WaveSpawner, 3-zone progression
+- [x] Zone 2: Dart enemy (green arrow, shooters), diagonal cross pattern, nebula background
+- [ ] Zone 3: Heavy enemy + pincer/tracker patterns + asteroid background (PRP-08c)
+- [ ] Zone 2 boss (PRP-08d)
+- [ ] Zone 3 boss (PRP-08e)
 - [ ] Difficulty progression
 
 ### Phase 5: Polish
@@ -230,21 +235,24 @@ Target: Each file under 500 lines
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| constants.py | ~305 | All tunable values |
-| game.py | ~453 | Main window and loop |
-| player.py | ~149 | Player ship (polygon hull, exhaust) |
+| constants.py | ~399 | All tunable values + zone configs |
+| game.py | ~498 | Main window and loop |
+| player.py | ~141 | Player ship (polygon hull, exhaust) |
 | projectile.py | ~38 | Player projectiles |
-| starfield.py | ~57 | Parallax background |
-| enemy.py | ~115 | Enemy entity (bat wing design) |
-| wave_spawner.py | ~90 | Wave spawning, boss trigger |
-| powerup.py | ~51 | Powerup entity |
+| starfield.py | ~103 | Parallax background + nebula clouds |
+| enemy.py | ~129 | Bat wing enemy entity |
+| dart.py | ~108 | Zone 2 Dart enemy (shooter) |
+| enemy_projectile.py | ~56 | Shared enemy/boss projectile entity |
+| wave_spawner.py | ~100 | Wave spawning from zone config |
+| zone_manager.py | ~31 | Zone progression (1-3) |
+| powerup.py | ~71 | Powerup entity (glassy button) |
 | collision.py | ~27 | Collision helpers |
 | explosions.py | ~181 | Particle factory functions |
 | particles.py | ~105 | ParticleSystem + Particle (circles + glow) |
 | scoring.py | ~53 | ScoringSystem (multiplier, combo) |
 | score_popup.py | ~74 | Floating score text |
 | screen_effects.py | ~68 | ScreenFlash, ScreenShake |
-| hud.py | ~334 | HUD, boss health bar, warning, victory |
+| hud.py | ~411 | HUD, boss health bar, warning, victory, zone transitions |
 | boss.py | ~410 | Sentinel boss entity (polygon hull) |
-| boss_attacks.py | ~125 | EnemyProjectile + attack factories |
-| boss_fight.py | ~242 | Boss state handlers + collision |
+| boss_attacks.py | ~72 | Boss attack pattern factories |
+| boss_fight.py | ~264 | Boss state handlers, zone transitions, collision |
