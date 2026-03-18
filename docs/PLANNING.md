@@ -258,8 +258,8 @@ Target: Each file under 500 lines
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| constants.py | ~399 | All tunable values + zone configs |
-| game.py | ~498 | Main window and loop |
+| constants.py | ~460 | All tunable values + zone configs |
+| game.py | ~500 | Main window and loop |
 | player.py | ~141 | Player ship (polygon hull, exhaust) |
 | projectile.py | ~38 | Player projectiles |
 | starfield.py | ~103 | Parallax background + nebula clouds |
@@ -276,6 +276,8 @@ Target: Each file under 500 lines
 | score_popup.py | ~74 | Floating score text |
 | screen_effects.py | ~68 | ScreenFlash, ScreenShake |
 | hud.py | ~411 | HUD, boss health bar, warning, victory, zone transitions |
-| boss.py | ~410 | Sentinel boss entity (polygon hull) |
+| boss.py | ~424 | Sentinel boss entity (polygon hull) |
+| marauder.py | ~299 | Marauder boss entity (Zone 2) |
 | boss_attacks.py | ~72 | Boss attack pattern factories |
-| boss_fight.py | ~264 | Boss state handlers, zone transitions, collision |
+| boss_fight.py | ~275 | Boss state handlers, zone transitions, collision |
+| debug_skip.py | ~74 | DEBUG ONLY — zone/boss skip keys (remove before release) |

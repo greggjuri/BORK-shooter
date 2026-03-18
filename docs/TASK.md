@@ -41,6 +41,8 @@ _(none)_
 - [x] init-08b: Zone 2 content — Dart enemy, diagonal cross pattern, nebula background (PRP-08b complete)
 - [x] fix: Top-right HUD layout — left-aligned ZONE/LIVES/icons stack, clean spacing
 - [x] init-08d: Zone 2 boss — Marauder with patrol, phased attacks, boss-agnostic boss_fight.py (PRP-08d complete)
+- [x] fix: Marauder visual overhaul — throbbing core, leading edge highlights, pulsing weapon ports
+- [x] feat: Debug skip system (F1-F3 zones, F9 boss, F10/F11 phases) — temporary, remove before release
 
 ---
 
