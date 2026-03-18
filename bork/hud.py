@@ -147,18 +147,18 @@ class HUD:
             anchor_x="right",
             anchor_y="top",
         )
-        # Life icons below label with 6px gap
+        # Life icons below label, right-aligned with ZONE/LIVES labels
         icon_y = label_y - 18
-        icon_x = right_x - (STARTING_LIVES - 1) * 20
         for i in range(STARTING_LIVES):
             color = HUD_PRIMARY if i < lives else HUD_DIM
+            ix = right_x - (STARTING_LIVES - 1 - i) * 20
             arcade.draw_text(
                 "\u25b8",
-                icon_x + i * 20,
+                ix,
                 icon_y,
                 color,
                 font_size=HUD_LIVES_FONT_SIZE,
-                anchor_x="left",
+                anchor_x="right",
                 anchor_y="top",
             )
 
