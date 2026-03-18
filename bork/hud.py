@@ -199,7 +199,7 @@ class HUD:
     def _draw_zone(self, zone: int) -> None:
         """Draw zone indicator at top-right, left-aligned with LIVES below."""
         arcade.draw_text(
-            f"\u25c4 ZONE {zone:02d} \u25ba",
+            f"ZONE {zone:02d}",
             SCREEN_WIDTH - HUD_MARGIN - 120,
             SCREEN_HEIGHT - HUD_MARGIN,
             HUD_DIM,
