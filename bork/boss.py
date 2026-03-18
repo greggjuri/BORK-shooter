@@ -5,11 +5,11 @@ import math
 import arcade
 
 from bork.boss_attacks import (
-    EnemyProjectile,
     create_aimed_shot,
     create_radial_burst,
     create_spread_shot,
 )
+from bork.enemy_projectile import EnemyProjectile
 from bork.constants import (
     BOSS_BULLET_COLOR_CYAN,
     BOSS_BULLET_COLOR_RED,

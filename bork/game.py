@@ -3,7 +3,7 @@
 import arcade
 
 from bork.boss import Sentinel
-from bork.boss_attacks import EnemyProjectile
+from bork.enemy_projectile import EnemyProjectile
 from bork.boss_fight import (
     update_boss_dying,
     update_boss_fight,

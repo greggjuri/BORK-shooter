@@ -1,7 +1,7 @@
 """Tests for boss system: Sentinel, EnemyProjectile, wave trigger, collisions."""
 
 from bork.boss import Sentinel
-from bork.boss_attacks import EnemyProjectile
+from bork.enemy_projectile import EnemyProjectile
 from bork.collision import point_in_rect
 from bork.constants import (
     ENEMIES_PER_WAVE,
