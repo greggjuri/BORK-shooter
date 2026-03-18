@@ -25,6 +25,8 @@ from bork.constants import (
     SENTINEL_CORE_HP,
     SENTINEL_CORE_SIZE,
     SENTINEL_ENTER_SPEED,
+    SENTINEL_ERRATIC_AMP,
+    SENTINEL_ERRATIC_FREQ,
     SENTINEL_EXHAUST_LAYERS,
     SENTINEL_HEIGHT,
     SENTINEL_HULL_COLOR,
@@ -184,7 +186,7 @@ class Sentinel:
 
         # Erratic movement in phase 3
         if self.phase == 3:
-            self.y += math.sin(self.time_alive * 5) * 30 * dt
+            self.y += math.sin(self.time_alive * SENTINEL_ERRATIC_FREQ) * SENTINEL_ERRATIC_AMP * dt
 
     def _update_attacks(
         self, dt: float, player_x: float, player_y: float

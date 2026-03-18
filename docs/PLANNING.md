@@ -141,6 +141,29 @@ Powerup:
     drift_speed: float       # Leftward drift
 ```
 
+## Boss Behaviour Reference
+
+### Sentinel (Zone 1)
+- **Movement**: Tracks player Y with `SENTINEL_TRACK_SPEED` (per phase). Fixed X at `SENTINEL_BATTLE_X`. Phase 2 adds lunges. Phase 3 adds erratic sinusoidal jitter (`SENTINEL_ERRATIC_FREQ`, `SENTINEL_ERRATIC_AMP`).
+- **Hull**: Mirrored polygon halves (ADR-010), nose left, engines right. Gap between halves = core opening.
+- **Phases**: 3 phases at 66%/33% HP thresholds. Phase 1: spread shots. Phase 2: spread + aimed shots + lunges. Phase 3: radial burst + beam attack + erratic movement.
+- **Damage zones**: Core opening (2×), armor (1×) — single HP pool (ADR-009).
+- **Death**: ADR-012 staggered multi-burst sequence, hull vanishes at detonation.
+- **Exhaust**: 10-layer blue gradient (`SENTINEL_EXHAUST_LAYERS`), ADR-011 pattern.
+- **Constants prefix**: `SENTINEL_*`
+
+### Marauder (Zone 2) — planned
+- **Movement**: Sinusoidal vertical patrol at fixed X (`MARAUDER_PATROL_FREQ`, `MARAUDER_PATROL_AMP`). Frequency increases with phase. No player tracking — player must lead shots.
+- **Hull**: Forward-swept polygon, green accent plate. Same mirrored-halves + gap pattern.
+- **Phases**: 3 phases at 50%/25% HP. Phase 1: 3-way spread. Phase 2: faster spread + diagonal cross burst. Phase 3: all above + 180° arc burst, doubled patrol speed.
+- **Damage zones**: Same 2-zone model (core 2×, armor 1×).
+- **Death**: Same ADR-012 sequence.
+- **Exhaust**: 10-layer green gradient (`MARAUDER_EXHAUST_LAYERS`).
+- **Constants prefix**: `MARAUDER_*`
+
+### Boss Interface Contract
+All bosses expose: `x`, `y`, `core_hp`, `max_hp`, `state`, `phase`, `name`, `is_dead`, collision dimensions (`opening_width/height`, `armor_width/height`, `core_damage`, `body_damage`), `beam_visible_timer`/`beam_y` (0 if no beam). Methods: `update(dt, player_x, player_y) -> list[EnemyProjectile]`, `take_hit(damage)`, `draw()`.
+
 ## Powerup System (Planned)
 
 | Powerup | Effect | Duration |
