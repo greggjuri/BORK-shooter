@@ -22,6 +22,8 @@ from bork.constants import (
     SENTINEL_BEAM_COOLDOWN,
     SENTINEL_CORE_COLOR,
     SENTINEL_CORE_GLOW_COLOR,
+    SENTINEL_BODY_DAMAGE,
+    SENTINEL_CORE_DAMAGE,
     SENTINEL_CORE_HP,
     SENTINEL_CORE_SIZE,
     SENTINEL_ENTER_SPEED,
@@ -33,6 +35,7 @@ from bork.constants import (
     SENTINEL_HULL_STROKE,
     SENTINEL_LUNGE_DURATION,
     SENTINEL_LUNGE_SPEED,
+    SENTINEL_OPENING_HEIGHT,
     SENTINEL_PHASE2_THRESHOLD,
     SENTINEL_PHASE3_THRESHOLD,
     SENTINEL_PLATE_COLOR,
@@ -68,6 +71,15 @@ class Sentinel:
         self.y = y
         # Health
         self.core_hp: int = SENTINEL_CORE_HP
+        self.max_hp: int = SENTINEL_CORE_HP
+        self.name: str = "SENTINEL"
+        # Collision dimensions (boss interface contract)
+        self.opening_width: float = 100
+        self.opening_height: float = SENTINEL_OPENING_HEIGHT
+        self.armor_width: float = 100
+        self.armor_height: float = 80
+        self.core_damage: int = SENTINEL_CORE_DAMAGE
+        self.body_damage: int = SENTINEL_BODY_DAMAGE
         # State
         self.state: str = "entering"  # entering, fighting, dying
         self.phase: int = 1

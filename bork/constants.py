@@ -315,6 +315,56 @@ BOSS_HP_BAR_WIDTH = 400
 BOSS_HP_BAR_HEIGHT = 12
 BOSS_HP_BAR_Y = SCREEN_HEIGHT - 55
 
+# === Marauder (Zone 2 Boss) ===
+
+MARAUDER_WIDTH = 150
+MARAUDER_HEIGHT = 60
+MARAUDER_HP = 160
+MARAUDER_ENTER_SPEED = 150.0
+MARAUDER_BATTLE_X = SCREEN_WIDTH - 160
+
+# Marauder movement
+MARAUDER_PATROL_FREQ = 0.6
+MARAUDER_PATROL_AMP = 110
+
+# Marauder phase thresholds (fraction of max HP)
+MARAUDER_PHASE2_HP = 0.50
+MARAUDER_PHASE3_HP = 0.25
+
+# Marauder shooting
+MARAUDER_PROJ_SPEED = 320
+MARAUDER_SHOOT_INTERVAL_P1 = 1.8
+MARAUDER_SHOOT_INTERVAL_P2 = 1.2
+MARAUDER_SHOOT_INTERVAL_P3 = 0.8
+MARAUDER_DIAGONAL_INTERVAL = 4.0
+MARAUDER_BURST_INTERVAL = 6.0
+
+# Marauder colors
+MARAUDER_HULL_COLOR = (40, 45, 55)
+MARAUDER_HULL_STROKE = (80, 200, 120)
+MARAUDER_PLATE_COLOR = (30, 90, 50)
+MARAUDER_PLATE_STROKE = (60, 160, 90)
+MARAUDER_NOSE_COLOR = (60, 200, 90)
+MARAUDER_PROJ_COLOR = (80, 220, 100)
+
+# Marauder exhaust (10 layers, outermost first)
+MARAUDER_EXHAUST_LAYERS = (
+    (18, 28, 10, 120, 255, 140, 20),
+    (16, 24, 9, 100, 240, 130, 30),
+    (14, 21, 8, 80, 220, 120, 45),
+    (12, 18, 7, 60, 200, 110, 60),
+    (10, 15, 6, 50, 180, 100, 80),
+    (8, 13, 5, 40, 160, 90, 100),
+    (7, 11, 4, 30, 140, 80, 120),
+    (6, 9, 4, 25, 120, 70, 145),
+    (5, 7, 3, 22, 100, 60, 165),
+    (4, 5, 2, 20, 120, 40, 190),
+)
+
+# Marauder points
+MARAUDER_POINTS = 7500
+MARAUDER_NODAMAGE_BONUS = 3500
+
 # Boss death
 BOSS_DEATH_DURATION = 2.5
 BOSS_DEATH_SMALL_EXPLOSION_INTERVAL = 0.08
@@ -376,9 +426,9 @@ ZONE_CONFIGS = {
         ),
         "enemies_per_wave": 6,
         "enemy_speed": 180.0,
-        "boss_type": "sentinel",
-        "boss_points": 7500,
-        "boss_nodamage_bonus": 3500,
+        "boss_type": "marauder",
+        "boss_points": MARAUDER_POINTS,
+        "boss_nodamage_bonus": MARAUDER_NODAMAGE_BONUS,
         "powerup_after_wave": 3,
     },
     3: {

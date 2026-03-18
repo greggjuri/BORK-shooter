@@ -33,7 +33,6 @@ from bork.constants import (
     SCREEN_SHAKE_INTENSITY,
     SCREEN_TITLE,
     SCREEN_WIDTH,
-    SENTINEL_CORE_HP,
     STARTING_LIVES,
     STATE_BOSS_DYING,
     STATE_BOSS_FIGHT,
@@ -411,8 +410,8 @@ class BorkGame(arcade.Window):
         if self.boss and self.state in (STATE_BOSS_FIGHT, STATE_BOSS_DYING):
             self.hud.draw_boss_health_bar(
                 self.boss.core_hp,
-                SENTINEL_CORE_HP,
-                "SENTINEL",
+                self.boss.max_hp,
+                self.boss.name,
                 self.boss.phase,
             )
 

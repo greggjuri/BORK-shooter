@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 import arcade
 
-from bork.boss import Sentinel
 from bork.collision import point_in_circle, point_in_rect
 from bork.constants import (
     BOSS_DEATH_DURATION,
@@ -25,11 +24,6 @@ from bork.constants import (
     SCREEN_SHAKE_DURATION,
     SCREEN_SHAKE_INTENSITY,
     SCREEN_WIDTH,
-    SENTINEL_BEAM_HIT_HEIGHT,
-    SENTINEL_BODY_DAMAGE,
-    SENTINEL_CORE_DAMAGE,
-    SENTINEL_OPENING_HEIGHT,
-    SENTINEL_WIDTH,
     STATE_BOSS_DYING,
     STATE_BOSS_FIGHT,
     STATE_GAME_OVER,
@@ -48,6 +42,15 @@ from bork.screen_effects import ScreenFlash, ScreenShake
 
 if TYPE_CHECKING:
     from bork.game import BorkGame
+
+
+def create_boss(boss_type: str, x: float, y: float):
+    """Factory function to create the correct boss for a zone."""
+    if boss_type == "marauder":
+        from bork.marauder import Marauder
+        return Marauder(x, y)
+    from bork.boss import Sentinel
+    return Sentinel(x, y)
 
 
 def update_boss_warning(game: BorkGame, dt: float) -> None:
@@ -73,7 +76,9 @@ def update_boss_warning(game: BorkGame, dt: float) -> None:
     game._check_enemy_player_collisions()
 
     if game.boss_warning_timer <= 0:
-        game.boss = Sentinel(SCREEN_WIDTH + SENTINEL_WIDTH, SCREEN_HEIGHT / 2)
+        config = game.zone_manager.config
+        boss_type = config.get("boss_type", "sentinel")
+        game.boss = create_boss(boss_type, SCREEN_WIDTH + 200, SCREEN_HEIGHT / 2)
         game.enemy_projectiles = []
         game.player_hit_during_boss = False
         game.state = STATE_BOSS_FIGHT
@@ -199,24 +204,29 @@ def check_projectile_boss_collisions(game: BorkGame) -> None:
     if game.boss is None or game.boss.state != "fighting":
         return
 
+    boss = game.boss
     hit_projectiles: set[int] = set()
     for pi, proj in enumerate(game.projectiles):
         if pi in hit_projectiles:
             continue
 
-        # Zone 1: Core opening (narrow horizontal slot, checked first for priority)
+        # Core opening (narrow horizontal slot, checked first for priority)
         if point_in_rect(
-            proj.x, proj.y, game.boss.x, game.boss.y, 100, SENTINEL_OPENING_HEIGHT
+            proj.x, proj.y, boss.x, boss.y,
+            boss.opening_width, boss.opening_height,
         ):
             hit_projectiles.add(pi)
-            game.boss.take_hit(SENTINEL_CORE_DAMAGE)
+            boss.take_hit(boss.core_damage)
             game.particle_system.add(create_enemy_explosion(proj.x, proj.y))
             continue
 
-        # Zone 2: Armor (full body rect)
-        if point_in_rect(proj.x, proj.y, game.boss.x, game.boss.y, 100, 80):
+        # Armor (full body bounding box)
+        if point_in_rect(
+            proj.x, proj.y, boss.x, boss.y,
+            boss.armor_width, boss.armor_height,
+        ):
             hit_projectiles.add(pi)
-            game.boss.take_hit(SENTINEL_BODY_DAMAGE)
+            boss.take_hit(boss.body_damage)
 
     game.projectiles = [
         p for i, p in enumerate(game.projectiles) if i not in hit_projectiles
@@ -240,7 +250,8 @@ def check_beam_player_collision(game: BorkGame) -> None:
         return
     if game.player.is_invulnerable:
         return
-    if abs(game.player.y - game.boss.beam_y) < SENTINEL_BEAM_HIT_HEIGHT / 2:
+    # Beam hit height: fixed 20px zone (Sentinel-specific but safe for all bosses)
+    if abs(game.player.y - game.boss.beam_y) < 10:
         _handle_player_hit(game)
 
 
