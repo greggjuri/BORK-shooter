@@ -8,8 +8,6 @@ from bork.constants import (
     EXHAUST_LAYERS,
     FIRE_RATE_LEVELS,
     INVULNERABLE_BLINK_RATE,
-    PLAYER_ACCELERATION,
-    PLAYER_FRICTION,
     PLAYER_SHIP_SIZE,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
@@ -19,7 +17,6 @@ from bork.constants import (
     SHIP_DARK_COLOR,
     SHIP_OUTLINE_COLOR,
     SPEED_LEVELS,
-    TARGET_FPS,
 )
 
 
@@ -48,39 +45,28 @@ class Player:
             if self.invulnerable_timer < 0:
                 self.invulnerable_timer = 0.0
 
-        # Apply acceleration from input
-        ax = 0.0
-        ay = 0.0
+        # Determine direction from input
+        dx = 0.0
+        dy = 0.0
         if arcade.key.RIGHT in keys_pressed or arcade.key.D in keys_pressed:
-            ax += PLAYER_ACCELERATION
+            dx += 1.0
         if arcade.key.LEFT in keys_pressed or arcade.key.A in keys_pressed:
-            ax -= PLAYER_ACCELERATION
+            dx -= 1.0
         if arcade.key.UP in keys_pressed or arcade.key.W in keys_pressed:
-            ay += PLAYER_ACCELERATION
+            dy += 1.0
         if arcade.key.DOWN in keys_pressed or arcade.key.S in keys_pressed:
-            ay -= PLAYER_ACCELERATION
+            dy -= 1.0
 
-        # Normalize diagonal input so it doesn't exceed acceleration magnitude
-        if ax != 0.0 and ay != 0.0:
+        # Normalize diagonal so it doesn't exceed max speed
+        if dx != 0.0 and dy != 0.0:
             factor = 1.0 / math.sqrt(2.0)
-            ax *= factor
-            ay *= factor
+            dx *= factor
+            dy *= factor
 
-        self.vx += ax * dt
-        self.vy += ay * dt
-
-        # Apply friction (frame-rate independent)
-        friction = PLAYER_FRICTION ** (dt * TARGET_FPS)
-        self.vx *= friction
-        self.vy *= friction
-
-        # Clamp to max speed (set by speed tier level)
+        # Set velocity instantly to tier max speed in input direction
         max_speed = SPEED_LEVELS[self.speed_level - 1]
-        speed = math.sqrt(self.vx * self.vx + self.vy * self.vy)
-        if speed > max_speed:
-            scale = max_speed / speed
-            self.vx *= scale
-            self.vy *= scale
+        self.vx = dx * max_speed
+        self.vy = dy * max_speed
 
         # Update position
         self.x += self.vx * dt

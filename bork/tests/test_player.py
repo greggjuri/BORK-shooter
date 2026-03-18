@@ -1,7 +1,5 @@
 """Tests for the player ship."""
 
-import math
-
 import arcade
 
 from bork.constants import (
@@ -57,13 +55,13 @@ def test_player_accelerates_with_wasd() -> None:
     assert p.vx > 0
 
 
-def test_player_decelerates_without_input() -> None:
+def test_player_stops_without_input() -> None:
     p = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-    p.vx = 200.0
-    p.vy = 100.0
+    p.update(DT, {arcade.key.RIGHT})
+    assert p.vx > 0
     p.update(DT, set())
-    assert abs(p.vx) < 200.0
-    assert abs(p.vy) < 100.0
+    assert p.vx == 0.0
+    assert p.vy == 0.0
 
 
 def test_player_clamped_to_screen_bounds() -> None:
@@ -88,13 +86,11 @@ def test_player_clamped_to_screen_bounds() -> None:
     assert p.y >= PLAYER_SHIP_SIZE
 
 
-def test_player_max_speed_clamped() -> None:
+def test_player_moves_at_max_speed() -> None:
     p = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-    p.vx = 9999.0
-    p.vy = 9999.0
-    p.update(DT, set())
-    speed = math.sqrt(p.vx**2 + p.vy**2)
-    assert speed <= PLAYER_MAX_SPEED + 0.01
+    p.update(DT, {arcade.key.RIGHT})
+    assert abs(p.vx - PLAYER_MAX_SPEED) < 0.01
+    assert p.vy == 0.0
 
 
 def test_player_shoot_cooldown() -> None:
@@ -125,21 +121,17 @@ def test_player_speed_level_default() -> None:
 def test_player_speed_level_increases_max_speed() -> None:
     p = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
     p.speed_level = 2
-    p.vx = 9999.0
-    p.vy = 0.0
-    p.update(DT, set())
-    assert abs(p.vx) <= SPEED_LEVELS[1] + 0.01
-    assert abs(p.vx) > SPEED_LEVELS[0]
+    p.update(DT, {arcade.key.RIGHT})
+    assert abs(p.vx - SPEED_LEVELS[1]) < 0.01
+    assert p.vx > SPEED_LEVELS[0]
 
 
 def test_player_max_speed_at_each_tier() -> None:
     for level in (1, 2, 3):
         p = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         p.speed_level = level
-        p.vx = 9999.0
-        p.vy = 0.0
-        p.update(DT, set())
-        assert abs(p.vx) <= SPEED_LEVELS[level - 1] + 0.01
+        p.update(DT, {arcade.key.RIGHT})
+        assert abs(p.vx - SPEED_LEVELS[level - 1]) < 0.01
 
 
 def test_player_shoot_cooldown_at_each_tier() -> None:
