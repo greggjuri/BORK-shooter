@@ -102,7 +102,8 @@ class BorkGame(arcade.Window):
         """Initialize full game state (new game or restart)."""
         self.zone_manager.reset()
         self.player = Player(PLAYER_START_X, PLAYER_START_Y)
-        self.starfield = Starfield()
+        config = self.zone_manager.config
+        self.starfield = Starfield(config.get("background_style", "deep_space"))
         self.particle_system = ParticleSystem()
         self.screen_flash = None
         self.screen_shake = None
@@ -114,7 +115,9 @@ class BorkGame(arcade.Window):
 
     def _start_zone(self) -> None:
         """Start (or restart) the current zone. Keeps player, score, and lives."""
-        self.wave_spawner = WaveSpawner(self.zone_manager.config)
+        config = self.zone_manager.config
+        self.wave_spawner = WaveSpawner(config)
+        self.starfield = Starfield(config.get("background_style", "deep_space"))
         self.projectiles = []
         self.enemies = []
         self.powerups = []
@@ -195,10 +198,20 @@ class BorkGame(arcade.Window):
             )
             return
 
-        # Update enemies and remove off-screen ones
+        # Update enemies, collect projectiles, remove off-screen
+        px, py = self.player.x, self.player.y
         for e in self.enemies:
-            e.update(dt)
+            proj = e.update(dt, px, py)
+            if proj is not None:
+                self.enemy_projectiles.append(proj)
         self.enemies = [e for e in self.enemies if not e.is_off_screen()]
+
+        # Update enemy projectiles during normal play
+        for ep in self.enemy_projectiles:
+            ep.update(dt)
+        self.enemy_projectiles = [
+            ep for ep in self.enemy_projectiles if not ep.is_off_screen()
+        ]
 
         # Powerup spawn signal from wave spawner
         if self.wave_spawner.powerup_spawn_due:
@@ -232,6 +245,9 @@ class BorkGame(arcade.Window):
         # Collision: enemies vs player
         self._check_enemy_player_collisions()
 
+        # Collision: enemy projectiles vs player
+        self._check_enemy_projectile_player_collisions()
+
         # Collision: powerups vs player
         self._check_powerup_player_collisions()
 
@@ -262,40 +278,46 @@ class BorkGame(arcade.Window):
         ]
         self.enemies = [e for i, e in enumerate(self.enemies) if i not in hit_enemies]
 
+    def _damage_player(self) -> None:
+        """Apply hit damage: explosion, flash, shake, respawn or game over."""
+        self.particle_system.add(
+            create_player_explosion(self.player.x, self.player.y)
+        )
+        self.screen_flash = ScreenFlash(
+            SCREEN_FLASH_COLOR, SCREEN_FLASH_DURATION, SCREEN_FLASH_FADE
+        )
+        self.screen_shake = ScreenShake(SCREEN_SHAKE_INTENSITY, SCREEN_SHAKE_DURATION)
+        self.lives -= 1
+        if self.lives <= 0:
+            self.state = STATE_GAME_OVER
+        else:
+            self.player.x = PLAYER_START_X
+            self.player.y = PLAYER_START_Y
+            self.player.vx = 0.0
+            self.player.vy = 0.0
+            self.player.invulnerable_timer = RESPAWN_INVULNERABLE_TIME
+            self.player.downgrade_on_death()
+
     def _check_enemy_player_collisions(self) -> None:
         """Check if any enemy touches the player."""
         if self.player.is_invulnerable:
             return
-
         for enemy in self.enemies:
             if circle_circle(
-                enemy.x,
-                enemy.y,
-                ENEMY_SIZE,
-                self.player.x,
-                self.player.y,
-                PLAYER_SHIP_SIZE,
+                enemy.x, enemy.y, ENEMY_SIZE,
+                self.player.x, self.player.y, PLAYER_SHIP_SIZE,
             ):
-                self.particle_system.add(
-                    create_player_explosion(self.player.x, self.player.y)
-                )
-                self.screen_flash = ScreenFlash(
-                    SCREEN_FLASH_COLOR, SCREEN_FLASH_DURATION, SCREEN_FLASH_FADE
-                )
-                self.screen_shake = ScreenShake(
-                    SCREEN_SHAKE_INTENSITY, SCREEN_SHAKE_DURATION
-                )
-                self.lives -= 1
-                if self.lives <= 0:
-                    self.state = STATE_GAME_OVER
-                else:
-                    # Respawn player
-                    self.player.x = PLAYER_START_X
-                    self.player.y = PLAYER_START_Y
-                    self.player.vx = 0.0
-                    self.player.vy = 0.0
-                    self.player.invulnerable_timer = RESPAWN_INVULNERABLE_TIME
-                    self.player.downgrade_on_death()
+                self._damage_player()
+                return
+
+    def _check_enemy_projectile_player_collisions(self) -> None:
+        """Check if enemy projectiles hit the player during normal gameplay."""
+        if self.player.is_invulnerable or not self.enemy_projectiles:
+            return
+        for ep in self.enemy_projectiles:
+            if point_in_circle(ep.x, ep.y, self.player.x, self.player.y, PLAYER_SHIP_SIZE):
+                self._damage_player()
+                self.enemy_projectiles.clear()
                 return
 
     def _check_powerup_player_collisions(self) -> None:

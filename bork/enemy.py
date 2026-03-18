@@ -45,13 +45,20 @@ class Enemy:
     """A single enemy that moves leftward with an optional sine pattern."""
 
     def __init__(
-        self, x: float, y: float, pattern: str, base_y: float, speed: float = 0.0
+        self,
+        x: float,
+        y: float,
+        pattern: str,
+        base_y: float,
+        speed: float = 0.0,
+        vy: float = 0.0,
     ) -> None:
         self.x = x
         self.y = y
-        self.pattern = pattern  # "straight" or "sine"
+        self.pattern = pattern  # "straight", "sine", or "diagonal_cross"
         self.base_y = base_y  # center Y for sine oscillation
         self.speed = speed if speed > 0 else ENEMY_SPEED
+        self.vy = vy  # vertical velocity for diagonal patterns
         self.time_alive = 0.0
 
     @property
@@ -62,14 +69,18 @@ class Enemy:
             * ENEMY_BATWING_WOBBLE_DEGREES
         )
 
-    def update(self, dt: float) -> None:
-        """Move leftward. Apply sine oscillation if pattern is 'sine'."""
+    def update(
+        self, dt: float, player_x: float = 0.0, player_y: float = 0.0
+    ) -> None:
+        """Move leftward. Apply sine or diagonal movement if applicable."""
         self.x -= self.speed * dt
         self.time_alive += dt
         if self.pattern == "sine":
             self.y = self.base_y + SINE_AMPLITUDE * math.sin(
                 SINE_FREQUENCY * self.time_alive * 2 * math.pi
             )
+        elif self.vy != 0.0:
+            self.y += self.vy * dt
 
     def is_off_screen(self) -> bool:
         """Return True if past the left edge of the screen."""

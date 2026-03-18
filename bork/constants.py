@@ -25,6 +25,19 @@ STAR_SPEEDS = [40.0, 100.0]  # pixels/sec per layer
 STAR_SIZES = [1.5, 2.5]  # radius per layer
 STAR_COLORS_ALPHA = [100, 200]  # alpha per layer (0-255)
 
+# Nebula background (Zone 2)
+NEBULA_CLOUD_COUNT = 5
+NEBULA_CLOUD_SPEED = 25.0  # px/sec (slower than slowest star layer)
+NEBULA_CLOUD_SIZE_RANGE = (60, 140)  # ellipse radius range
+NEBULA_CLOUD_COLORS = (
+    (180, 80, 200, 25),
+    (220, 80, 180, 30),
+    (100, 120, 220, 25),
+    (160, 60, 180, 20),
+    (120, 100, 240, 28),
+)
+NEBULA_STAR_TINT = (200, 180, 255)  # slight purple tint for nebula stars
+
 # Enemies
 ENEMY_SPEED = 150.0  # pixels/sec (horizontal, leftward)
 ENEMY_SIZE = 15  # half-width for collision and drawing
@@ -37,6 +50,16 @@ ENEMY_BATWING_PLATE_COLOR = (53, 53, 69)  # #353545 — fuselage
 ENEMY_BATWING_STROKE_COLOR = (255, 68, 68)  # red outline
 ENEMY_BATWING_EYE_COLOR = (255, 51, 51)  # scanner eye outer
 ENEMY_BATWING_EYE_BRIGHT = (255, 102, 102)  # scanner eye inner
+
+# Dart enemy (Zone 2)
+ENEMY_DART_SIZE = 10  # collision radius (~65% of bat wing)
+ENEMY_DART_BODY_COLOR = (30, 180, 80)  # green hull
+ENEMY_DART_ACCENT_COLOR = (80, 255, 130)  # bright green stroke
+ENEMY_DART_SCANNER_COLOR = (50, 255, 120)  # scanner eye glow
+ENEMY_DART_SHOOTER_CHANCE = 0.35  # 35% of darts can shoot
+ENEMY_DART_SHOOT_COOLDOWN = 2.0  # seconds between shots
+ENEMY_DART_PROJECTILE_SPEED = 250.0  # px/sec
+ENEMY_DART_PROJECTILE_COLOR = (100, 255, 120)  # green
 
 # Enemy wobble
 ENEMY_BATWING_WOBBLE_SPEED = 1.5  # oscillations per second
@@ -323,6 +346,8 @@ ZONE_COUNT = 3
 ZONE_CONFIGS = {
     1: {
         "name": "DEEP SPACE",
+        "enemy_type": "batwing",
+        "background_style": "deep_space",
         "waves_before_boss": 9,
         "wave_patterns": (
             (WAVE_TOP_Y, "straight"),
@@ -338,11 +363,14 @@ ZONE_CONFIGS = {
     },
     2: {
         "name": "NEBULA",
+        "enemy_type": "dart",
+        "background_style": "nebula",
         "waves_before_boss": 12,
         "wave_patterns": (
             (WAVE_TOP_Y, "straight"),
             (WAVE_BOTTOM_Y, "straight"),
             (WAVE_CENTER_Y, "sine"),
+            (WAVE_CENTER_Y, "diagonal_cross"),
         ),
         "enemies_per_wave": 6,
         "enemy_speed": 180.0,
@@ -353,6 +381,8 @@ ZONE_CONFIGS = {
     },
     3: {
         "name": "ASTEROID BELT",
+        "enemy_type": "batwing",
+        "background_style": "deep_space",
         "waves_before_boss": 15,
         "wave_patterns": (
             (WAVE_TOP_Y, "straight"),

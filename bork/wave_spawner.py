@@ -1,6 +1,10 @@
 """Wave spawner that manages timed enemy waves."""
 
+import random
+
 from bork.constants import (
+    ENEMY_DART_SHOOTER_CHANCE,
+    ENEMY_DART_SIZE,
     ENEMY_SIZE,
     ENEMY_SPAWN_SPACING,
     SCREEN_HEIGHT,
@@ -8,6 +12,7 @@ from bork.constants import (
     WAVE_PAUSE,
     WAVE_START_DELAY,
 )
+from bork.dart import Dart
 from bork.enemy import Enemy
 
 
@@ -20,6 +25,7 @@ class WaveSpawner:
         self._enemies_per_wave = zone_config["enemies_per_wave"]
         self._enemy_speed = zone_config["enemy_speed"]
         self._powerup_after_wave = zone_config["powerup_after_wave"]
+        self._enemy_type = zone_config.get("enemy_type", "batwing")
 
         self.wave_index = 0
         self.timer = WAVE_START_DELAY
@@ -29,27 +35,23 @@ class WaveSpawner:
         self.total_waves_completed = 0
         self.boss_triggered = False
 
-    def update(self, dt: float) -> Enemy | None:
-        """Tick the spawner. Returns a new Enemy if one should spawn."""
+    def update(self, dt: float) -> Enemy | Dart | None:
+        """Tick the spawner. Returns a new enemy if one should spawn."""
         self.timer -= dt
 
         if not self.wave_active:
-            # Waiting for next wave
             if self.timer <= 0:
                 self.wave_active = True
-                self.timer = 0  # spawn immediately on activation
+                self.timer = 0
             return None
 
-        # Wave is active — check if it's time to spawn
         if self.timer <= 0:
             enemy = self._spawn_enemy()
             self.spawned_in_wave += 1
 
             if self.spawned_in_wave >= self._enemies_per_wave:
-                # Signal powerup spawn after the configured wave
                 if self.wave_index == self._powerup_after_wave:
                     self.powerup_spawn_due = True
-                # Wave complete — pause before next
                 self.wave_active = False
                 self.spawned_in_wave = 0
                 self.wave_index = (self.wave_index + 1) % len(self._wave_defs)
@@ -67,11 +69,25 @@ class WaveSpawner:
 
         return None
 
-    def _spawn_enemy(self) -> Enemy:
-        """Create an enemy based on current wave definition."""
+    def _spawn_enemy(self) -> Enemy | Dart:
+        """Create an enemy based on current wave definition and zone enemy type."""
         y_frac, pattern = self._wave_defs[self.wave_index]
-        y = SCREEN_HEIGHT * y_frac
-        return Enemy(SCREEN_WIDTH + ENEMY_SIZE, y, pattern, y, self._enemy_speed)
+        size = ENEMY_DART_SIZE if self._enemy_type == "dart" else ENEMY_SIZE
+        spawn_x = SCREEN_WIDTH + size
+
+        vy = 0.0
+        if pattern == "diagonal_cross":
+            # Alternate top/bottom entry for crossing pattern
+            from_top = self.spawned_in_wave % 2 == 0
+            y = SCREEN_HEIGHT * (0.8 if from_top else 0.2)
+            vy = -self._enemy_speed * 0.4 if from_top else self._enemy_speed * 0.4
+        else:
+            y = SCREEN_HEIGHT * y_frac
+
+        if self._enemy_type == "dart":
+            is_shooter = random.random() < ENEMY_DART_SHOOTER_CHANCE
+            return Dart(spawn_x, y, pattern, y, self._enemy_speed, vy, is_shooter)
+        return Enemy(spawn_x, y, pattern, y, self._enemy_speed, vy)
 
     def reset(self) -> None:
         """Reset to initial state for zone/game restart."""

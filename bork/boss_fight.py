@@ -63,8 +63,9 @@ def update_boss_warning(game: BorkGame, dt: float) -> None:
         proj.update(dt)
     game.projectiles = [p for p in game.projectiles if not p.is_off_screen()]
     # Let existing enemies continue scrolling (they'll leave screen naturally)
+    px, py = game.player.x, game.player.y
     for e in game.enemies:
-        e.update(dt)
+        e.update(dt, px, py)
     game.enemies = [e for e in game.enemies if not e.is_off_screen()]
 
     # Enemies still interact normally during warning
@@ -100,8 +101,9 @@ def update_boss_fight(game: BorkGame, dt: float) -> None:
     ]
 
     # Let remaining enemies from warning phase continue scrolling off
+    px, py = game.player.x, game.player.y
     for e in game.enemies:
-        e.update(dt)
+        e.update(dt, px, py)
     game.enemies = [e for e in game.enemies if not e.is_off_screen()]
 
     # Enemies still interact normally until they scroll off
