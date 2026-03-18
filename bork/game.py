@@ -12,6 +12,7 @@ from bork.boss_fight import (
     update_zone_transition,
 )
 from bork.collision import circle_circle, point_in_circle
+from bork.debug_skip import handle_debug_key  # DEBUG ONLY
 from bork.constants import (
     COLOR_BACKGROUND,
     COMBO_MILESTONES,
@@ -468,6 +469,7 @@ class BorkGame(arcade.Window):
     def on_key_press(self, key: int, modifiers: int) -> None:
         """Track key presses."""
         self.keys_pressed.add(key)
+        handle_debug_key(key, self)  # DEBUG ONLY
 
         if key == arcade.key.R and self.state in (
             STATE_GAME_OVER, STATE_VICTORY, STATE_ZONE_TRANSITION

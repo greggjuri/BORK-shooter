@@ -1,3 +1,8 @@
+# ============================================================
+# DEBUG ONLY — SET TO False BEFORE RELEASE
+# ============================================================
+DEBUG_SKIP_ENABLED = True  # TODO: remove debug_skip before release
+
 # Window
 SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 540
