@@ -152,7 +152,7 @@ Powerup:
 - **Exhaust**: 10-layer blue gradient (`SENTINEL_EXHAUST_LAYERS`), ADR-011 pattern.
 - **Constants prefix**: `SENTINEL_*`
 
-### Marauder (Zone 2) — planned
+### Marauder (Zone 2)
 - **Movement**: Sinusoidal vertical patrol at fixed X (`MARAUDER_PATROL_FREQ`, `MARAUDER_PATROL_AMP`). Frequency increases with phase. No player tracking — player must lead shots.
 - **Hull**: Forward-swept polygon, green accent plate. Same mirrored-halves + gap pattern.
 - **Phases**: 3 phases at 50%/25% HP. Phase 1: 3-way spread. Phase 2: faster spread + diagonal cross burst. Phase 3: all above + 180° arc burst, doubled patrol speed.
@@ -220,7 +220,7 @@ All bosses expose: `x`, `y`, `core_hp`, `max_hp`, `state`, `phase`, `name`, `is_
 - [x] Zone infrastructure — ZoneManager, parameterized WaveSpawner, 3-zone progression
 - [x] Zone 2: Dart enemy (green arrow, shooters), diagonal cross pattern, nebula background
 - [ ] Zone 3: Heavy enemy + pincer/tracker patterns + asteroid background (PRP-08c)
-- [ ] Zone 2 boss (PRP-08d)
+- [x] Zone 2 boss — Marauder (PRP-08d)
 - [ ] Zone 3 boss (PRP-08e)
 - [ ] Difficulty progression
 
