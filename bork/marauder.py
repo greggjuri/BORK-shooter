@@ -8,10 +8,17 @@ from bork.boss_attacks import create_radial_burst, create_spread_shot
 from bork.constants import (
     MARAUDER_BATTLE_X,
     MARAUDER_BURST_INTERVAL,
+    MARAUDER_CORE_BASE_H,
+    MARAUDER_CORE_BASE_W,
+    MARAUDER_CORE_INNER_COLOR,
+    MARAUDER_CORE_MID_COLOR,
+    MARAUDER_CORE_OUTER_COLOR,
+    MARAUDER_CORE_THROB_FREQ,
     MARAUDER_DIAGONAL_INTERVAL,
     MARAUDER_ENTER_SPEED,
     MARAUDER_EXHAUST_LAYERS,
     MARAUDER_HEIGHT,
+    MARAUDER_HIGHLIGHT_COLOR,
     MARAUDER_HP,
     MARAUDER_HULL_COLOR,
     MARAUDER_HULL_STROKE,
@@ -27,6 +34,7 @@ from bork.constants import (
     MARAUDER_SHOOT_INTERVAL_P1,
     MARAUDER_SHOOT_INTERVAL_P2,
     MARAUDER_SHOOT_INTERVAL_P3,
+    MARAUDER_WEAPON_GLOW_COLOR,
     MARAUDER_WIDTH,
     SCREEN_HEIGHT,
 )
@@ -201,6 +209,7 @@ class Marauder:
     def draw(self) -> None:
         """Draw the Marauder boss."""
         self._draw_exhaust()
+        self._draw_core_throb()
         self._draw_hull()
 
     def _draw_exhaust(self) -> None:
@@ -212,6 +221,36 @@ class Marauder:
         for ey in (top_ey, bot_ey):
             for ox, w, h, r, g, b, a in MARAUDER_EXHAUST_LAYERS:
                 arcade.draw_ellipse_filled(engine_x + ox, ey, w, h, (r, g, b, a))
+
+    def _draw_core_throb(self) -> None:
+        """Draw pulsing core glow in the gap between hull halves."""
+        throb = math.sin(self.time_alive * MARAUDER_CORE_THROB_FREQ)
+        inner_throb = math.sin(self.time_alive * MARAUDER_CORE_THROB_FREQ + 0.4)
+        cx, cy = self.x, self.y
+
+        # Outer — dim ambient glow
+        outer_alpha = int(60 + 40 * throb)
+        outer_w = MARAUDER_CORE_BASE_W * (1.0 + 0.08 * throb)
+        arcade.draw_ellipse_filled(
+            cx, cy, outer_w, MARAUDER_CORE_BASE_H,
+            (*MARAUDER_CORE_OUTER_COLOR, outer_alpha),
+        )
+
+        # Mid — main plasma fill
+        mid_alpha = int(130 + 80 * throb)
+        mid_w = MARAUDER_CORE_BASE_W * 0.65 * (1.0 + 0.12 * throb)
+        arcade.draw_ellipse_filled(
+            cx, cy, mid_w, MARAUDER_CORE_BASE_H * 0.65,
+            (*MARAUDER_CORE_MID_COLOR, mid_alpha),
+        )
+
+        # Inner — hot centre, slightly offset phase
+        inner_alpha = int(200 + 55 * inner_throb)
+        inner_w = MARAUDER_CORE_BASE_W * 0.25 * (1.0 + 0.15 * inner_throb)
+        arcade.draw_ellipse_filled(
+            cx, cy, inner_w, MARAUDER_CORE_BASE_H * 0.3,
+            (*MARAUDER_CORE_INNER_COLOR, inner_alpha),
+        )
 
     def _draw_hull(self) -> None:
         """Draw polygon hull halves with plates and details."""
@@ -239,12 +278,19 @@ class Marauder:
         arcade.draw_polygon_filled(bot_plate, MARAUDER_PLATE_COLOR)
         arcade.draw_polygon_outline(bot_plate, MARAUDER_PLATE_STROKE, 1)
 
+        # Leading edge highlights (nose tip → forward upper/lower vertex)
+        arcade.draw_line(x - 70, y, x - 40, y + 18, MARAUDER_HIGHLIGHT_COLOR, 2)
+        arcade.draw_line(x - 70, y, x - 40, y - 18, MARAUDER_HIGHLIGHT_COLOR, 2)
+
         # Nose ellipse
         arcade.draw_ellipse_filled(x - 70, y, 10, 6, MARAUDER_NOSE_COLOR)
 
-        # Weapon port ellipses
-        arcade.draw_ellipse_filled(x - 40, y + 12, 6, 3, MARAUDER_HULL_STROKE)
-        arcade.draw_ellipse_filled(x - 40, y - 12, 6, 3, MARAUDER_HULL_STROKE)
+        # Weapon port ellipses (pulsing glow)
+        throb = math.sin(self.time_alive * MARAUDER_CORE_THROB_FREQ)
+        wp_alpha = int(80 + 60 * throb)
+        wp_color = (*MARAUDER_WEAPON_GLOW_COLOR, wp_alpha)
+        arcade.draw_ellipse_filled(x - 40, y + 12, 6, 3, wp_color)
+        arcade.draw_ellipse_filled(x - 40, y - 12, 6, 3, wp_color)
 
         # Panel lines
         arcade.draw_line(x - 10, y + 20, x + 50, y + 18, stroke_dim, 1)
